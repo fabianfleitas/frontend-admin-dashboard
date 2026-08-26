@@ -14,6 +14,7 @@ import { VersionTimeline } from './VersionTimeline'
 import { DocumentStatusBadge } from './DocumentStatusBadge'
 import { formatDate } from '@/lib/utils'
 import { toast } from '@/stores/toast.store'
+import { isNotFound } from '@/lib/http'
 
 interface DocumentDrawerProps {
   documentoId: number | null
@@ -21,7 +22,8 @@ interface DocumentDrawerProps {
 }
 
 export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
-  const { data, isLoading, isError, refetch } = useDocument(documentoId)
+  const { data, isLoading, isError, error, refetch } = useDocument(documentoId)
+  const isError404 = isError && isNotFound(error)
   const uploadVersion = useUploadVersion()
   const reindex = useReindex()
   const deactivate = useDeactivateDocument()
@@ -124,7 +126,14 @@ export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
           <Skeleton className="h-32 w-full" />
         </div>
       ) : isError ? (
-        <ErrorState message="No fue posible cargar el documento." onRetry={() => refetch()} />
+        <ErrorState
+          message={
+            isError404
+              ? 'No se encontró el documento o pertenece a otra institución. El aislamiento es por institución.'
+              : 'No fue posible cargar el documento.'
+          }
+          onRetry={() => refetch()}
+        />
       ) : !data ? (
         <p className="text-sm text-muted-foreground">No se encontró el documento.</p>
       ) : (

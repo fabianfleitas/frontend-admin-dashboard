@@ -3,6 +3,8 @@ export interface ReadyOut {
   services: Record<string, boolean>
 }
 
+export type TokensByModel = Record<string, Record<string, number>>
+
 export interface MetricsOut {
   total_queries: number
   total_conversations: number
@@ -12,4 +14,41 @@ export interface MetricsOut {
   avg_fidelity: number
   avg_relevance: number
   system_status: string
+  total_llm_responses: number
+  total_guard: number
+  total_llm_failed: number
+  guard_rate: number
+  llm_failed_rate: number
+  total_tokens_input: number
+  total_tokens_output: number
+  tokens_by_model: TokensByModel
+  avg_retrieval_similarity: number
+  total_voice_queries: number
+  total_text_queries: number
+  avg_response_time_voice: number
+  avg_response_time_text: number
+  series: MetricSeriesPoint[]
+  desde: string | null
+  hasta: string | null
+  categoria_id: number | null
+  modelo: string | null
+  documento_id: number | null
+  granularidad: string | null
+}
+
+export interface MetricSeriesPoint {
+  fecha: string
+  conversaciones: number
+  tokens_input: number
+  tokens_output: number
+  llm: number
+  guard: number
+  llm_failed: number
+}
+
+export interface MetricsFilters {
+  desde?: string
+  hasta?: string
+  categoria_id?: number
+  granularidad?: 'day' | 'week' | 'month'
 }

@@ -8,9 +8,31 @@
 
 Consultar los usuarios autorizados al dashboard.
 
-Campos: - Nombre - Email - Rol - Último acceso
+Campos (UserOut):
 
-Acciones MVP: - Visualizar información
+-   external_auth_id
+-   email
+-   role (STUDENT | STAFF | ADMIN)
+-   created_at
+-   updated_at
+
+Acciones MVP:
+
+-   Visualizar información (listado read-only).
+
+Gestión de roles: pendiente de backend (Nivel 2).
+
+### Endpoints
+
+-   GET /api/admin/users
+
+### Componentes
+
+-   UsersPage
+-   UsersTable
+-   RoleBadge
+
+------------------------------------------------------------------------
 
 ## Settings
 
@@ -18,8 +40,20 @@ Acciones MVP: - Visualizar información
 
 Mostrar información técnica del sistema.
 
-Secciones: - Modelo LLM - Embedding Model - Storage - Vector Store -
-Versiones - Variables de entorno relevantes (solo lectura)
+Secciones:
+
+-   Modelo LLM (pendiente en backend)
+-   Embedding Model (pendiente en backend)
+-   Storage (pendiente en backend)
+-   Vector Store (pendiente en backend)
+-   Estado del sistema (GET /ready + GET /api/admin/metrics)
+
+Los bloques LLM/Embedding/Storage/Vector no tienen endpoint: se renderizan
+"solo lectura" con aviso "pendiente en backend".
+
+### Componentes
+
+-   SettingsPage (PendingBlock)
 
 ## Definition of Done
 

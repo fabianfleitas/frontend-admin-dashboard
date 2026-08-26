@@ -10,6 +10,7 @@
     "lint:fix": "oxlint --fix",
     "format": "prettier --write src",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -38,6 +39,7 @@
     "prettier": "^3.9.5",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^3.2.7"
   }
 }

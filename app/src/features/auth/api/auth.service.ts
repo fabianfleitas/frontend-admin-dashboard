@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
+import { http } from '@/lib/http'
 import type { User } from '@supabase/supabase-js'
+import type { UserOut } from '@/features/users/types'
 
 export async function signInWithGoogle(): Promise<void> {
   await supabase.auth.signInWithOAuth({
@@ -19,4 +21,8 @@ export async function getCurrentUser(): Promise<User | null> {
     data: { user },
   } = await supabase.auth.getUser()
   return user
+}
+
+export function getMe(): Promise<UserOut> {
+  return http.get<UserOut>('/me')
 }

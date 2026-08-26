@@ -1,16 +1,10 @@
 import { supabase } from './supabase'
+import { useAuthStore } from '@/stores/auth.store'
 
 export const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
 if (!API_URL) {
   console.warn('[http] VITE_API_URL no está configurada en el entorno.')
-}
-
-export type AuthHeaders = {
-  'X-External-Auth-Id': string | null
-  'X-Auth-Provider': 'delegated'
-  'X-User-Type': 'ADMIN' | 'SECRETARIA' | 'ESTUDIANTE'
-  'X-User-Email': string | null
 }
 
 export class ApiError extends Error {
@@ -25,27 +19,23 @@ export class ApiError extends Error {
   }
 }
 
+export function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
+
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
   query?: Record<string, string | number | boolean | null | undefined>
   multipart?: boolean
-  /** Override X-User-Type for endpoints that target non-admin scopes. */
-  userTypeOverride?: AuthHeaders['X-User-Type']
+  /** Resolve the response as a Blob instead of JSON (e.g. audio). */
+  responseType?: 'blob'
 }
 
-async function getAuthHeaders(
-  userTypeOverride?: AuthHeaders['X-User-Type'],
-): Promise<AuthHeaders> {
+async function getAccessToken(): Promise<string | null> {
   const {
     data: { session },
   } = await supabase.auth.getSession()
-  const user = session?.user
-  return {
-    'X-External-Auth-Id': user?.id ?? null,
-    'X-Auth-Provider': 'delegated',
-    'X-User-Type': userTypeOverride ?? 'ADMIN',
-    'X-User-Email': user?.email ?? null,
-  }
+  return session?.access_token ?? null
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
@@ -59,12 +49,12 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { body: dataBody, query, headers, multipart, userTypeOverride, ...rest } = options
+  const { body: dataBody, query, headers, multipart, responseType, ...rest } = options
 
-  const authHeaders = await getAuthHeaders(userTypeOverride)
-  const initHeaders = new Headers(authHeaders as Record<string, string>)
-  if (headers) {
-    new Headers(headers).forEach((value, key) => initHeaders.set(key, value))
+  const initHeaders = new Headers(headers)
+  const token = await getAccessToken()
+  if (token) {
+    initHeaders.set('Authorization', `Bearer ${token}`)
   }
 
   let finalBody: BodyInit | undefined
@@ -93,10 +83,20 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     } catch {
       detail = await res.text().catch(() => undefined)
     }
+
+    if (res.status === 401) {
+      useAuthStore.getState().setUser(null)
+      supabase.auth.signOut().catch(() => {})
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login'
+      }
+    }
+
     throw new ApiError(`API ${res.status} en ${path}`, res.status, detail)
   }
 
   if (res.status === 204) return undefined as T
+  if (responseType === 'blob') return (await res.blob()) as T
   return (await res.json()) as T
 }
 

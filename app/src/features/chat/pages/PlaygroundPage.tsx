@@ -10,6 +10,7 @@ import { FeedbackButtons } from '../components/FeedbackButtons'
 import { useChatQuery } from '../hooks/useChatQuery'
 import { useCreateConversation } from '../hooks/useCreateConversation'
 import { toast } from '@/stores/toast.store'
+import { isAssistantMessage } from '../types'
 import type { MessageOut, SourceOut } from '../types'
 
 export function PlaygroundPage() {
@@ -23,7 +24,7 @@ export function PlaygroundPage() {
   const chatQuery = useChatQuery()
 
   const isLoading = createConversation.isPending || chatQuery.isPending
-  const lastAssistant = [...messages].reverse().find((m) => m.rol_mensaje === 'assistant') ?? null
+  const lastAssistant = [...messages].reverse().find((m) => isAssistantMessage(m)) ?? null
 
   async function ensureConversation(): Promise<number | null> {
     if (conversationId !== null) return conversationId
@@ -49,7 +50,7 @@ export function PlaygroundPage() {
     const optimisticUser: MessageOut = {
       id: -Math.floor(Math.random() * 100000),
       conversacion_id: conversationId ?? -1,
-      rol_mensaje: 'user',
+      rol_mensaje: 'USER' as const,
       contenido_texto: text,
       proveedor_ia: null,
       modelo_ia: null,

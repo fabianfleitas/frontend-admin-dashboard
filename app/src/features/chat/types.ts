@@ -1,9 +1,9 @@
-export type MessageRole = 'user' | 'assistant' | 'system'
+export type MessageRole = 'USER' | 'ASSISTANT'
 
 export interface MessageOut {
   id: number
   conversacion_id: number
-  rol_mensaje: string
+  rol_mensaje: MessageRole
   contenido_texto: string
   proveedor_ia: string | null
   modelo_ia: string | null
@@ -36,6 +36,10 @@ export interface ChatQueryOut {
   assistant_message: MessageOut
 }
 
+export function isAssistantMessage(m: { rol_mensaje: MessageRole }): boolean {
+  return m.rol_mensaje === 'ASSISTANT'
+}
+
 export interface ChatFeedbackIn {
   message_id: number
   rating: 1 | 2 | 3 | 4 | 5
@@ -50,4 +54,28 @@ export interface ChatFeedbackOut {
   comment: string | null
   audit_id: string
   created_at: string
+}
+
+export interface AudioInteractionOut {
+  id: number
+  mensaje_id: number
+  ruta_audio_original: string
+  ruta_audio_respuesta: string | null
+  transcripcion: string | null
+  transcription_model: string | null
+  duracion_segundos: number | null
+  formato_audio: string | null
+  tamano_bytes: number | null
+  fecha_creacion: string
+}
+
+export interface ChatVoiceOut {
+  response: string
+  sources: SourceOut[]
+  transcription: string
+  audio_interaction: AudioInteractionOut
+  audit_id: string
+  conversation_id: number
+  user_message: MessageOut
+  assistant_message: MessageOut
 }

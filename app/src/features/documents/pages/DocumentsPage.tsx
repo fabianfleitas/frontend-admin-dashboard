@@ -7,6 +7,7 @@ import { Select } from '@/components/forms/Select'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { useDocuments } from '../hooks/useDocuments'
+import { useCategoriesLookup } from '../hooks/useCategories'
 import { DocumentsTable } from '../components/DocumentsTable'
 import { DocumentDrawer } from '../components/DocumentDrawer'
 import { UploadDialog } from '../components/UploadDialog'
@@ -29,10 +30,17 @@ export function DocumentsPage() {
   const [offset, setOffset] = useState(0)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<StatusFilter>('ALL')
+  const [categoryFilter, setCategoryFilter] = useState<string>('ALL')
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [uploadOpen, setUploadOpen] = useState(false)
 
   const documentsQuery = useDocuments({ limit: PAGE_SIZE, offset })
+  const { active, byId } = useCategoriesLookup()
+
+  const categoryOptions = [
+    { value: 'ALL', label: 'Todas las categorías' },
+    ...active.map((c) => ({ value: String(c.id), label: c.nombre })),
+  ]
 
   return (
     <div className="space-y-6">
@@ -59,6 +67,13 @@ export function DocumentsPage() {
           onChange={(v) => setStatus(v as StatusFilter)}
           options={STATUS_OPTIONS}
         />
+        <Select
+          value={categoryFilter}
+          onChange={setCategoryFilter}
+          options={categoryOptions}
+          placeholder="Todas las categorías"
+          aria-label="Filtrar por categoría"
+        />
         <Button
           variant="secondary"
           onClick={() => documentsQuery.refetch()}
@@ -72,9 +87,6 @@ export function DocumentsPage() {
           />
           Actualizar
         </Button>
-        <p className="ml-auto text-xs text-muted-foreground">
-          Filtro por categoría no disponible — pendiente en backend (Nivel 2).
-        </p>
       </div>
 
       {/* Contenido */}
@@ -88,7 +100,7 @@ export function DocumentsPage() {
           documents={[]}
           loading
           onSelect={() => undefined}
-          filters={{ search, status }}
+          filters={{ search, status, category: categoryFilter }}
         />
       ) : !documentsQuery.data || documentsQuery.data.items.length === 0 ? (
         <EmptyState
@@ -108,7 +120,8 @@ export function DocumentsPage() {
             documents={documentsQuery.data.items}
             onSelect={setSelectedId}
             selectedId={selectedId}
-            filters={{ search, status }}
+            filters={{ search, status, category: categoryFilter }}
+            categoryNames={byId}
           />
           <Pagination
             total={documentsQuery.data.pagination.total}

@@ -4,12 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Upload, FileText, X } from 'lucide-react'
 import { Modal } from '@/components/common/Modal'
 import { Button } from '@/components/common/Button'
+import { Select } from '@/components/forms/Select'
 import {
   uploadDocumentSchema,
   type UploadDocumentResolved,
   type UploadDocumentValues,
 } from '../schemas/upload.schema'
 import { useUploadDocument } from '../hooks/useUploadDocument'
+import { useCategoriesLookup } from '../hooks/useCategories'
 import { toast } from '@/stores/toast.store'
 
 interface UploadDialogProps {
@@ -24,12 +26,19 @@ export function UploadDialog({ open, onClose }: UploadDialogProps) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
   const upload = useUploadDocument()
+  const { active } = useCategoriesLookup()
+
+  const categoryOptions = active.map((c) => ({
+    value: String(c.id),
+    label: c.nombre,
+  }))
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UploadDocumentValues>({
     resolver: zodResolver(uploadDocumentSchema),
@@ -40,6 +49,8 @@ export function UploadDialog({ open, onClose }: UploadDialogProps) {
       codigo_documento: null,
     },
   })
+
+  const categoriaId = watch('categoria_id')
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFileError(null)
@@ -211,22 +222,17 @@ export function UploadDialog({ open, onClose }: UploadDialogProps) {
               className="text-sm font-medium text-foreground"
               htmlFor="upload-categoria"
             >
-              Categoría (ID)
+              Categoría
             </label>
-            <input
-              id="upload-categoria"
-              type="number"
-              min={1}
-              {...register('categoria_id')}
-              className="h-9 w-full rounded-md border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
-              placeholder="Opcional"
+            <Select
+              value={String(categoriaId ?? '')}
+              onChange={(v) => setValue('categoria_id', v ? Number(v) : null)}
+              options={categoryOptions}
+              placeholder="Sin categoría"
             />
             {errors.categoria_id && (
               <p className="text-xs text-danger">{errors.categoria_id.message}</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Gestión de categorías pendiente en backend (Nivel 2).
-            </p>
           </div>
 
           <div className="space-y-1.5">

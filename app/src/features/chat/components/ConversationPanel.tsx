@@ -2,6 +2,7 @@ import { Plus, Trash2, Copy } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { MessageList } from './MessageList'
 import type { MessageOut } from '../types'
+import { isAssistantMessage } from '../types'
 
 interface ConversationPanelProps {
   messages: MessageOut[]
@@ -33,7 +34,7 @@ export function ConversationPanel({
   }
 
   function copyLastResponse() {
-    const lastAssistant = [...messages].reverse().find((m) => m.rol_mensaje === 'assistant')
+    const lastAssistant = [...messages].reverse().find((m) => isAssistantMessage(m))
     if (lastAssistant) {
       navigator.clipboard.writeText(lastAssistant.contenido_texto)
     }

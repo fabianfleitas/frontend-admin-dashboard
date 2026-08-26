@@ -12,6 +12,8 @@ import { useHideConversation } from '../hooks/useHideConversation'
 import { MessageTimeline } from './MessageTimeline'
 import { formatDate } from '@/lib/utils'
 import { toast } from '@/stores/toast.store'
+import { isNotFound } from '@/lib/http'
+import { isAssistantMessage } from '@/features/chat/types'
 
 interface ConversationDrawerProps {
   conversationId: number | null
@@ -19,13 +21,14 @@ interface ConversationDrawerProps {
 }
 
 export function ConversationDrawer({ conversationId, onClose }: ConversationDrawerProps) {
-  const { data, isLoading, isError, refetch } = useConversation(conversationId)
+  const { data, isLoading, isError, error, refetch } = useConversation(conversationId)
+  const isError404 = isError && isNotFound(error)
   const hide = useHideConversation()
   const [confirmHide, setConfirmHide] = useState(false)
 
   const messages = data?.messages ?? []
   const lastAssistant =
-    [...messages].reverse().find((m) => m.rol_mensaje === 'assistant') ?? null
+    [...messages].reverse().find((m) => isAssistantMessage(m)) ?? null
 
   async function handleHide() {
     if (!conversationId) return
@@ -64,7 +67,14 @@ export function ConversationDrawer({ conversationId, onClose }: ConversationDraw
           <Skeleton className="h-48 w-full" />
         </div>
       ) : isError ? (
-        <ErrorState message="No fue posible cargar la conversación." onRetry={() => refetch()} />
+        <ErrorState
+          message={
+            isError404
+              ? 'No se encontró la conversación o pertenece a otra institución. El aislamiento es por institución.'
+              : 'No fue posible cargar la conversación.'
+          }
+          onRetry={() => refetch()}
+        />
       ) : !data ? (
         <p className="text-sm text-muted-foreground">No se encontró la conversación.</p>
       ) : (

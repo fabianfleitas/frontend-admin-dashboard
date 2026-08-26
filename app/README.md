@@ -2,7 +2,7 @@
 
 Panel de administración del sistema de atención inteligente basado en arquitectura RAG.
 El frontend consume el backend FastAPI (`backend-agent-system`) documentado en
-`../documentacion/openapi.json` y autentica con Supabase Auth (Google).
+`../docs/backend_admin_handoff/openapi.current.json` y autentica con Supabase Auth (Google).
 
 Las especificaciones funcionales viven como Markdown numerado en la raíz del repo
 (ver `../AGENTS.md` para el mapeo Documento → Módulo).
@@ -69,7 +69,10 @@ src/
     audit/              Trazabilidad (GET /api/admin/audit)
     users/              Listado read-only (GET /api/admin/users)
     settings/           Vista solo-lectura (bloques LLM/Embedding/Storage/Vector pendientes en backend)
-  lib/                  http.ts (_cliente fetch con cabeceras delegadas), supabase.ts, utils.ts
+    billing/            Placeholder de rutas (Fase 5): suscripción/pagos/comprobantes — sin endpoints aún
+    institution/        Placeholder de rutas (Fase 5): institución/configuración — sin endpoints aún
+    platform/           Placeholder de rutas (Fase 5): superadmin — sin endpoints aún
+  lib/                  http.ts (_cliente fetch con Authorization Bearer), supabase.ts, utils.ts
   stores/               auth.store (sesión), ui.store (sidebar), toast.store
   types/                paginación compartida
 ```
@@ -79,18 +82,15 @@ src/
 Componentes → Hooks (TanStack Query) → Services (`*.service.ts`) → HTTP client (`lib/http.ts`).
 NUNCA se llama `fetch` directamente desde componentes ni se almacena estado de API en Zustand.
 
-### Autenticación delegada
+### Autenticación JWT
 
-El backend NO valida sesión propia. `lib/http.ts` inyecta cabeceras en cada request:
+El backend valida el JWT de Supabase de forma directa. `lib/http.ts` envía en cada request:
 
 | Header | Valor |
 |---|---|
-| `X-External-Auth-Id` | UID de Supabase del usuario logueado |
-| `X-Auth-Provider` | `delegated` |
-| `X-User-Type` | `ADMIN` (por defecto para rutas del dashboard) |
-| `X-User-Email` | email del usuario (si disponible) |
+| `Authorization` | `Bearer <access_token>` del usuario logueado en Supabase |
 
-El JWT de Supabase **no** se envía al backend.
+Los headers delegados `X-External-Auth-Id`, `X-Auth-Provider`, `X-User-Type` y `X-User-Email` son obsoletos y **no** se envían. El modelo de permisos usa `tipo_miembro` (`ADMIN | SECRETARIA | ESTUDIANTE`) e `is_platform_admin` desde `GET /me`; `role` es legacy. Ver `../AGENTS.md` §"Critical API integration conventions".
 
 ### Code-splitting
 
@@ -103,6 +103,7 @@ Ver `../AGENTS.md` §"Known spec-vs-OpenAPI deltas". Las más relevantes en cód
 
 - **Reindex**: `POST /api/admin/reindex` con `documento_id?` en body (no `POST /api/admin/documents/{id}/reindex`).
 - **Métricas**: `GET /api/admin/metrics` no soporta filtros. Analytics UI los muestra con aviso "Nivel 2".
+- **Categories**: `GET /api/admin/categories` existe (paginado). Resolver `categoria_id` a `CategoryOut` en el cliente (sin CRUD aún, Nivel 2).
 - **Trailing slashes**: `/api/conversations/` lleva slash; `/api/conversations/{id}` no. Respétalo.
 - **Settings**: bloques LLM/Embedding/Storage/Vector no tienen endpoint → `PendingBlock` con aviso.
 - **Audit**: `AuditLogOut` no trae prompt/respuesta/usuario → drawer enlaza a Conversations via `mensaje_id`.

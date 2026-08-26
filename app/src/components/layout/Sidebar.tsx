@@ -8,32 +8,53 @@ import {
   ShieldCheck,
   Users,
   Settings,
+  Building2,
+  CreditCard,
+  Globe,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/stores/ui.store'
+import { useAuthCapabilities } from '@/features/auth/hooks/useAuthCapabilities'
+import type { RouteGuard } from '@/components/common/ProtectedRoute'
 
 interface NavItem {
   to: string
   label: string
   icon: typeof LayoutDashboard
+  guard?: RouteGuard
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/documents', label: 'Knowledge Base', icon: BookOpen },
-  { to: '/playground', label: 'AI Agent', icon: Bot },
-  { to: '/conversations', label: 'Conversations', icon: MessagesSquare },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/audit', label: 'Audit', icon: ShieldCheck },
-  { to: '/users', label: 'Users', icon: Users },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, guard: 'member' },
+  { to: '/documents', label: 'Knowledge Base', icon: BookOpen, guard: 'staff' },
+  { to: '/playground', label: 'AI Agent', icon: Bot, guard: 'member' },
+  { to: '/conversations', label: 'Conversations', icon: MessagesSquare, guard: 'member' },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3, guard: 'staff' },
+  { to: '/audit', label: 'Audit', icon: ShieldCheck, guard: 'staff' },
+  { to: '/users', label: 'Users', icon: Users, guard: 'admin' },
+  { to: '/settings', label: 'Settings', icon: Settings, guard: 'admin' },
+  { to: '/institution', label: 'Institución', icon: Building2, guard: 'admin' },
+  { to: '/billing', label: 'Billing', icon: CreditCard, guard: 'admin' },
+  { to: '/platform', label: 'Platform', icon: Globe, guard: 'platform' },
 ]
 
 export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed)
   const toggle = useUiStore((s) => s.toggleSidebar)
+  const caps = useAuthCapabilities()
+
+  const can = (guard: RouteGuard | undefined): boolean => {
+    if (!guard) return true
+    if (guard === 'member') return caps.hasMembership || caps.isPlatformAdmin
+    if (guard === 'staff') return caps.isStaff || caps.isPlatformAdmin
+    if (guard === 'admin') return caps.isAdmin || caps.isPlatformAdmin
+    if (guard === 'platform') return caps.isPlatformAdmin
+    return true
+  }
+
+  const visibleItems = NAV_ITEMS.filter((item) => can(item.guard))
 
   return (
     <aside
@@ -61,7 +82,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon
           return (
             <NavLink

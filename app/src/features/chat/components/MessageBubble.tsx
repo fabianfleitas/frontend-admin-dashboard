@@ -2,13 +2,14 @@ import { Bot, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/utils'
 import type { MessageOut } from '../types'
+import { isAssistantMessage } from '../types'
 
 interface MessageBubbleProps {
   message: MessageOut
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
-  const isAssistant = message.rol_mensaje === 'assistant'
+  const isAssistant = isAssistantMessage(message)
 
   return (
     <div

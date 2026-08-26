@@ -2,7 +2,7 @@ import { Eye } from 'lucide-react'
 import { Skeleton } from '@/components/feedback/Skeleton'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import type { DocumentOut, DocumentStatus } from '../types'
+import type { CategoryOut, DocumentOut, DocumentStatus } from '../types'
 import { DocumentStatusBadge } from './DocumentStatusBadge'
 
 interface DocumentsTableProps {
@@ -10,11 +10,13 @@ interface DocumentsTableProps {
   loading?: boolean
   onSelect: (documentoId: number) => void
   selectedId?: number | null
+  categoryNames?: Map<number, CategoryOut>
 }
 
 interface FilterState {
   search?: string
   status?: DocumentStatus | 'INACTIVE' | 'ALL'
+  category?: string
 }
 
 function filterDocuments(documents: DocumentOut[], filters: FilterState): DocumentOut[] {
@@ -26,6 +28,9 @@ function filterDocuments(documents: DocumentOut[], filters: FilterState): Docume
         (doc.codigo_documento ?? '').toLowerCase().includes(q) ||
         (doc.descripcion ?? '').toLowerCase().includes(q)
       if (!matches) return false
+    }
+    if (filters.category && filters.category !== 'ALL') {
+      if (doc.categoria_id !== Number(filters.category)) return false
     }
     if (filters.status && filters.status !== 'ALL') {
       if (filters.status === 'INACTIVE') {
@@ -49,6 +54,7 @@ export function DocumentsTable({
   onSelect,
   selectedId,
   filters,
+  categoryNames,
 }: DocumentsTableWithFiltersProps) {
   const filtered = filterDocuments(documents, filters)
 
@@ -107,7 +113,7 @@ export function DocumentsTable({
                   )}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {doc.categoria_id ?? '—'}
+                  {doc.categoria_id ? (categoryNames?.get(doc.categoria_id)?.nombre ?? `#${doc.categoria_id}`) : '—'}
                 </td>
                 <td className="px-4 py-3">
                   <DocumentStatusBadge

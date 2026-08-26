@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BarChart3, MessagesSquare, FileText, ThumbsUp, Clock, Target, Gauge, HeartPulse } from 'lucide-react'
 import { Card } from '@/components/common/Card'
 import { MetricCard } from '@/features/dashboard/components/MetricCard'
+import { MetricsIA } from '@/features/dashboard/components/MetricsIA'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { Skeleton } from '@/components/feedback/Skeleton'
@@ -28,14 +29,13 @@ function formatLatency(ms: number): string {
 
 export function AnalyticsPage() {
   const [filters, setFilters] = useState<AnalyticsFilters>(DEFAULT_FILTERS)
-  const analyticsQuery = useAnalytics()
+  const analyticsQuery = useAnalytics(filters)
   const metrics = analyticsQuery.data
 
-  // Series temporales aún no expuestas por /api/admin/metrics (Nivel 2).
-  const queriesTrend: ChartPoint[] = []
-  const feedbackTrend: ChartPoint[] = []
-  const documentsUsage: ChartPoint[] = []
-  const categoryDistribution: ChartPoint[] = []
+  // Series temporales: usar series entregadas por /api/admin/metrics
+  const series = metrics?.series ?? []
+  const queriesTrend: ChartPoint[] = series.map((s) => ({ label: s.fecha, value: s.conversaciones }))
+  const tokensTrend: ChartPoint[] = series.map((s) => ({ label: s.fecha, value: s.tokens_input + s.tokens_output }))
 
   return (
     <div className="space-y-6">
@@ -85,11 +85,13 @@ export function AnalyticsPage() {
             />
           </section>
 
+          <MetricsIA metrics={metrics} />
+
           <section className="grid gap-4 lg:grid-cols-2">
             <ChartLine title="Tendencia de consultas" data={queriesTrend} />
-            <ChartLine title="Feedback en el tiempo" data={feedbackTrend} color="#16a34a" />
-            <ChartBar title="Documentos más consultados" data={documentsUsage} />
-            <ChartBar title="Distribución por categoría" data={categoryDistribution} color="#0ea5e9" />
+            <ChartLine title="Tokens (input + output)" data={tokensTrend} color="#16a34a" />
+            <ChartBar title="Documentos más consultados" data={[]} />
+            <ChartBar title="Distribución por categoría" data={[]} />
           </section>
         </>
       )}

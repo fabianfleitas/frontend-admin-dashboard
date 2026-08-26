@@ -1,10 +1,12 @@
 import { http } from '@/lib/http'
-import type { MetricsOut, ReadyOut } from '../types'
+import type { MetricsOut, ReadyOut, MetricsFilters } from '../types'
 
 export function getReady(): Promise<ReadyOut> {
   return http.get<ReadyOut>('/ready')
 }
 
-export function getMetrics(): Promise<MetricsOut> {
-  return http.get<MetricsOut>('/api/admin/metrics')
+export function getMetrics(filters?: MetricsFilters): Promise<MetricsOut> {
+  return http.get<MetricsOut>('/api/admin/metrics', {
+    query: { desde: filters?.desde, hasta: filters?.hasta, categoria_id: filters?.categoria_id, granularidad: filters?.granularidad },
+  })
 }

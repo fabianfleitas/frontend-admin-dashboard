@@ -1,6 +1,6 @@
 import { Select } from '@/components/forms/Select'
-import { SearchBar } from '@/components/common/SearchBar'
 import { Info } from 'lucide-react'
+import { useCategories } from '@/features/documents/hooks/useCategories'
 import type { AnalyticsFilters } from '../types'
 
 interface FiltersPanelProps {
@@ -16,6 +16,12 @@ const PERIOD_OPTIONS = [
 ]
 
 export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
+  const categoriesQuery = useCategories()
+  const catOptions = (categoriesQuery.data?.items ?? []).map((c) => ({
+    value: String(c.id),
+    label: c.nombre,
+  }))
+
   return (
     <div className="space-y-3 rounded-lg border bg-surface px-4 py-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -24,27 +30,16 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
           onChange={(v) => onChange({ ...filters, period: v as AnalyticsFilters['period'] })}
           options={PERIOD_OPTIONS}
         />
-        <SearchBar
-          value={filters.category}
-          onChange={(v) => onChange({ ...filters, category: v })}
-          placeholder="Categoría…"
-        />
-        <SearchBar
-          value={filters.model}
-          onChange={(v) => onChange({ ...filters, model: v })}
-          placeholder="Modelo…"
-        />
-        <SearchBar
-          value={filters.document}
-          onChange={(v) => onChange({ ...filters, document: v })}
-          placeholder="Documento…"
+        <Select
+          value={String(filters.category)}
+          onChange={(v) => onChange({ ...filters, category: v ? Number(v) : '' })}
+          options={[{ value: '', label: 'Todas las categorías' }, ...catOptions]}
         />
       </div>
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Info size={12} aria-hidden />
-        Los filtros por periodo/categoría/modelo no son soportados por{' '}
-        <code>GET /api/admin/metrics</code> todavía (Nivel 2). Visualmente aplicados sobre los
-        agregados disponibles.
+        Filtros de periodo y categoría enviados a{' '}
+        <code>GET /api/admin/metrics</code>. Filtros de modelo/documento no expuestos (Nivel 2).
       </p>
     </div>
   )

@@ -41,18 +41,17 @@ Feedback
 ## Barra superior
 
 -   Buscar conversación
--   Filtro por fecha
 -   Filtro por feedback
+-   Incluir ocultas (include_hidden)
 -   Botón actualizar
 
 ## Tabla
 
 -   ID
--   Fecha
--   Usuario
+-   Título
+-   Última interacción
 -   Cantidad de mensajes
 -   Feedback
--   Latencia
 -   Acción
 
 ------------------------------------------------------------------------
@@ -61,11 +60,11 @@ Feedback
 
 ## Información general
 
+-   Título
 -   Fecha
--   Usuario
--   Modelo
--   Duración
+-   Mensajes
 -   Tokens
+-   Latencia
 
 ## Conversación
 
@@ -74,7 +73,6 @@ Vista tipo chat con mensajes del usuario y del asistente.
 ## Contexto
 
 -   Documentos recuperados
--   Chunks utilizados
 -   Score
 
 ## Feedback
@@ -86,9 +84,13 @@ Vista tipo chat con mensajes del usuario y del asistente.
 
 # Endpoints
 
--   GET /api/conversations
+-   GET /api/conversations/
+-   POST /api/conversations/
 -   GET /api/conversations/{id}
+-   DELETE /api/conversations/{id}
 -   GET /api/conversations/{id}/messages
+
+Nota: el listado lleva barra final; el detalle no. Respetarlo.
 
 ------------------------------------------------------------------------
 
@@ -115,6 +117,7 @@ Loading, Empty, Error y Success con componentes reutilizables.
 -   No eliminar mensajes individuales.
 -   Mostrar únicamente información registrada por el backend.
 -   Mantener trazabilidad completa.
+-   Ocultar = soft-delete vía DELETE.
 
 ------------------------------------------------------------------------
 
@@ -135,6 +138,13 @@ Loading, Empty, Error y Success con componentes reutilizables.
 -   Integración API.
 -   Responsive.
 -   Accesibilidad básica.
+
+------------------------------------------------------------------------
+
+# Estado actual / deltas (Nivel 2)
+
+-   FeedbackBadge.tsx y ContextViewer.tsx existen pero no están integrados
+    en ConversationDrawer (pendiente conectar fuentes y feedback por mensaje).
 
 ------------------------------------------------------------------------
 

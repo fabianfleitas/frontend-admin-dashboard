@@ -17,9 +17,11 @@ import { ErrorState } from '@/components/feedback/ErrorState'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { Skeleton } from '@/components/feedback/Skeleton'
 import { Card } from '@/components/common/Card'
+import { useAuthStore } from '@/stores/auth.store'
 import { useMetrics } from '../hooks/useMetrics'
 import { useReady } from '../hooks/useReady'
 import { MetricCard } from '../components/MetricCard'
+import { MetricsIA } from '../components/MetricsIA'
 import { SystemStatus } from '../components/SystemStatus'
 import { ActivityTimeline } from '../components/ActivityTimeline'
 import { QuickActionCard } from '../components/QuickActionCard'
@@ -43,12 +45,22 @@ function formatScore(value: number): string {
 export function DashboardPage() {
   const metricsQuery = useMetrics()
   const readyQuery = useReady()
+  const role = useAuthStore((s) => s.profile?.role)
 
   const metrics = metricsQuery.data
   const ready = readyQuery.data
 
   const metricsError = metricsQuery.isError
   const readyError = readyQuery.isError
+
+  const canManageDocuments = role === 'ADMIN' || role === 'STAFF'
+  const quickActions = [
+    { to: '/documents', label: 'Subir documento', description: 'Knowledge Base', icon: Upload, guard: canManageDocuments },
+    { to: '/documents', label: 'Knowledge Base', description: 'Gestionar documentos', icon: BookOpen, guard: canManageDocuments },
+    { to: '/playground', label: 'Playground', description: 'Probar asistente IA', icon: Bot, guard: true },
+    { to: '/audit', label: 'Auditoría', description: 'Trazabilidad', icon: ShieldCheck, guard: canManageDocuments },
+    { to: '/documents', label: 'Reindexar', description: 'Volver a indexar', icon: Upload, guard: canManageDocuments },
+  ].filter((a) => a.guard)
 
   return (
     <div className="space-y-6">
@@ -143,6 +155,8 @@ export function DashboardPage() {
         )}
       </section>
 
+      {!metricsError && metrics ? <MetricsIA metrics={metrics} loading={false} /> : null}
+
       {/* Estado del sistema + Actividad reciente */}
       <section className="grid gap-4 lg:grid-cols-2">
         {readyError ? (
@@ -169,36 +183,15 @@ export function DashboardPage() {
           description="Accesos directos a las funciones más utilizadas."
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          <QuickActionCard
-            to="/documents"
-            label="Subir documento"
-            description="Knowledge Base"
-            icon={Upload}
-          />
-          <QuickActionCard
-            to="/documents"
-            label="Knowledge Base"
-            description="Gestionar documentos"
-            icon={BookOpen}
-          />
-          <QuickActionCard
-            to="/playground"
-            label="Playground"
-            description="Probar asistente IA"
-            icon={Bot}
-          />
-          <QuickActionCard
-            to="/audit"
-            label="Auditoría"
-            description="Trazabilidad"
-            icon={ShieldCheck}
-          />
-          <QuickActionCard
-            to="/documents"
-            label="Reindexar"
-            description="Volver a indexar"
-            icon={Upload}
-          />
+          {quickActions.map((action) => (
+            <QuickActionCard
+              key={action.label}
+              to={action.to}
+              label={action.label}
+              description={action.description}
+              icon={action.icon}
+            />
+          ))}
         </div>
       </section>
     </div>

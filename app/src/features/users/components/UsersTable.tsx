@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/feedback/EmptyState'
 import { Users } from 'lucide-react'
 import type { UserOut } from '../types'
 import { RoleBadge } from './RoleBadge'
+import { MemberBadge } from './MemberBadge'
 
 interface UsersTableProps {
   users: UserOut[]
@@ -16,7 +17,9 @@ function matchSearch(user: UserOut, q: string): boolean {
   return (
     user.external_auth_id.toLowerCase().includes(q) ||
     (user.email ?? '').toLowerCase().includes(q) ||
-    user.role.toLowerCase().includes(q)
+    (user.full_name ?? '').toLowerCase().includes(q) ||
+    user.role.toLowerCase().includes(q) ||
+    (user.tipo_miembro ?? '').toLowerCase().includes(q)
   )
 }
 
@@ -51,10 +54,11 @@ export function UsersTable({ users, loading = false, search = '' }: UsersTablePr
       <table className="w-full text-sm">
         <thead className="border-b bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
-            <th className="px-4 py-3 font-medium">Email</th>
-            <th className="px-4 py-3 font-medium">Rol</th>
+            <th className="px-4 py-3 font-medium">Usuario</th>
+            <th className="px-4 py-3 font-medium">Membresía</th>
+            <th className="px-4 py-3 font-medium">Institución</th>
+            <th className="px-4 py-3 font-medium">Rol legacy</th>
             <th className="px-4 py-3 font-medium">Auth ID</th>
-            <th className="px-4 py-3 font-medium">Último acceso</th>
             <th className="px-4 py-3 font-medium">Fecha creación</th>
           </tr>
         </thead>
@@ -64,9 +68,25 @@ export function UsersTable({ users, loading = false, search = '' }: UsersTablePr
               key={user.external_auth_id}
               className={cn('transition-colors hover:bg-muted/40')}
             >
-              <td className="px-4 py-3 font-medium text-foreground">
-                {user.email ?? '—'}
+              <td className="px-4 py-3">
+                <div className="font-medium text-foreground">
+                  {user.full_name ?? user.email ?? '—'}
+                </div>
+                {user.email && user.full_name && (
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                )}
+                {user.is_platform_admin && (
+                  <div className="mt-0.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                    Platform admin
+                  </div>
+                )}
               </td>
+              <td className="px-4 py-3">
+                <MemberBadge type={user.tipo_miembro} />
+              </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {user.nombre_institucion ?? (user.institucion_id ? `#${user.institucion_id}` : '—')}
+                </td>
               <td className="px-4 py-3">
                 <RoleBadge role={user.role} />
               </td>
@@ -75,9 +95,6 @@ export function UsersTable({ users, loading = false, search = '' }: UsersTablePr
                 title={user.external_auth_id}
               >
                 {user.external_auth_id.slice(0, 12)}…
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {formatDate(user.updated_at)}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {formatDate(user.created_at)}

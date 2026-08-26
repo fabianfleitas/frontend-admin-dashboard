@@ -28,37 +28,21 @@ análisis.
 
 ``` text
 Pregunta
-
-↓
-
+   ↓
 API Chat
-
-↓
-
+   ↓
 Anonimización (Presidio)
-
-↓
-
+   ↓
 Embeddings
-
-↓
-
+   ↓
 Búsqueda Vectorial
-
-↓
-
+   ↓
 Construcción del Prompt
-
-↓
-
+   ↓
 LLM (OpenRouter)
-
-↓
-
+   ↓
 Respuesta
-
-↓
-
+   ↓
 Feedback
 ```
 
@@ -128,17 +112,12 @@ Botones:
 Tabla:
 
 -   Documento
--   Versión
+-   Página
 -   Score
--   Fragmentos utilizados
 
 ## Chunks
 
-Lista expandible con:
-
--   Contenido
--   Score
--   Posición
+Lista expandible con contenido y score.
 
 ## Prompt
 
@@ -149,9 +128,7 @@ Visualización en modo solo lectura.
 -   Modelo utilizado
 -   Tokens prompt
 -   Tokens respuesta
--   Tiempo total
--   Tiempo recuperación
--   Tiempo generación
+-   Latencia
 
 ------------------------------------------------------------------------
 
@@ -179,14 +156,12 @@ No obligatorio para el MVP.
 
 features/chat/
 
--   ChatPage
+-   PlaygroundPage
 -   ConversationPanel
 -   MessageList
 -   MessageBubble
 -   ContextPanel
 -   RetrievedDocumentsTable
--   ChunkViewer
--   PromptViewer
 -   MetricsCard
 -   FeedbackButtons
 
@@ -198,19 +173,18 @@ chat.service.ts
 
 Funciones:
 
--   sendMessage()
--   sendAudio()
+-   sendChat()
+-   sendVoice()
 -   sendFeedback()
 
 ------------------------------------------------------------------------
 
 # Tipos TypeScript
 
--   ChatMessage
--   ChatResponse
--   RetrievedDocument
--   Chunk
--   FeedbackRequest
+-   ChatQueryIn / ChatQueryOut
+-   ChatFeedbackIn / ChatFeedbackOut
+-   SourceOut
+-   MessageOut
 
 ------------------------------------------------------------------------
 
@@ -252,6 +226,20 @@ CU-05 Registrar feedback.
 -   Visualización de contexto.
 -   Componentes reutilizables.
 -   Responsive.
+
+------------------------------------------------------------------------
+
+# Estado actual / deltas (Nivel 2)
+
+-   Historial: el playground guarda mensajes solo en memoria; no carga
+    conversaciones previas (pendiente integrar useConversations).
+-   Markdown: MessageBubble usa texto plano (pendiente react-markdown +
+    rehype-sanitize).
+-   Chunks: SourceOut solo expone document_id, document, page y
+    similarity_score; no se muestran chunks individuales.
+-   Prompt completo: no es retornado por el backend (Nivel 2).
+-   Voz: sendVoice existe en el servicio pero no está integrado en la UI
+    (opcional MVP).
 
 ------------------------------------------------------------------------
 

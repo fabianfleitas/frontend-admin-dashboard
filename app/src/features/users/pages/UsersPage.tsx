@@ -28,7 +28,7 @@ export function UsersPage() {
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Buscar por email, rol o auth id…"
+          placeholder="Buscar por nombre, email, rol o membresía…"
         />
         <Button
           variant="secondary"

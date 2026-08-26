@@ -3,11 +3,18 @@ import type {
   AdminReindexOut,
   AdminUploadDocumentOut,
   AdminUploadVersionOut,
+  CategoryOut,
   DocumentDetailOut,
   DocumentOut,
   ListDocumentsParams,
 } from '../types'
 import type { PaginatedResponse } from '@/types/pagination'
+
+export function listCategories(params: ListDocumentsParams = {}) {
+  return http.get<PaginatedResponse<CategoryOut>>('/api/admin/categories', {
+    query: { limit: params.limit, offset: params.offset },
+  })
+}
 
 export function listDocuments(params: ListDocumentsParams = {}) {
   return http.get<PaginatedResponse<DocumentOut>>('/api/admin/documents', {

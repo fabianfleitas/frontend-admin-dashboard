@@ -9,12 +9,14 @@ facilitar la toma de decisiones.
 
 ## KPIs
 
--   Consultas por día/semana/mes
+-   Consultas totales
+-   Conversaciones totales
+-   Documentos totales
+-   Feedback total
 -   Latencia promedio
--   Feedback positivo/negativo
--   Documentos más consultados
--   Errores
--   Tiempo de indexación
+-   Fidelidad promedio
+-   Relevancia promedio
+-   Estado del sistema
 
 ## Gráficos
 
@@ -33,8 +35,21 @@ Periodo, categoría, modelo, documento.
 
 ## Componentes
 
-AnalyticsPage, MetricCard, LineChart, BarChart, FiltersPanel.
+-   AnalyticsPage
+-   MetricCard (reutiliza useMetrics)
+-   ChartLine
+-   ChartBar
+-   FiltersPanel
 
 ## Definition of Done
 
 KPIs conectados, filtros funcionales, gráficos responsivos.
+
+------------------------------------------------------------------------
+
+# Estado actual / deltas (Nivel 2)
+
+-   GET /api/admin/metrics no soporta filtros ni series temporales. La UI
+    muestra los KPIs reales, pero los gráficos y filtros están marcados
+    "Nivel 2" (arrays vacíos + EmptyState). Los filtros afectan solo estado
+    local, no la query.

@@ -1,5 +1,14 @@
 export type DocumentStatus = 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'
 
+export interface CategoryOut {
+  id: number
+  nombre: string
+  descripcion: string | null
+  activo: boolean
+  institucion_id: number
+  fecha_creacion: string
+}
+
 export interface DocumentVersionOut {
   id: number
   documento_id: number
