@@ -47,9 +47,11 @@ KPIs conectados, filtros funcionales, gráficos responsivos.
 
 ------------------------------------------------------------------------
 
-# Estado actual / deltas (Nivel 2)
+# Estado actual / deltas
 
--   GET /api/admin/metrics no soporta filtros ni series temporales. La UI
-    muestra los KPIs reales, pero los gráficos y filtros están marcados
-    "Nivel 2" (arrays vacíos + EmptyState). Los filtros afectan solo estado
-    local, no la query.
+-   `GET /api/admin/metrics` soporta filtros (`desde/hasta/categoria_id/modelo/
+    documento_id`), `granularidad` (`day`) y series temporales. La UI envía los
+    filtros del panel (período, categoría, modelo, documento) a la query.
+-   Gráficos con datos reales: "Tendencia de consultas" (series), "Tokens por
+    modelo" (derivado de `tokens_by_model`, top 8), "Documentos más consultados"
+    (`top_documents`) y "Distribución por categoría" (`documents_by_category`).

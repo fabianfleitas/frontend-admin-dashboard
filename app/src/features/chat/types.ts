@@ -13,6 +13,9 @@ export interface MessageOut {
   tiempo_respuesta_ms: number | null
   fecha_envio: string
   audit_id: string | null
+  sources?: SourceOut[]
+  rating?: number | null
+  feedback_comment?: string | null
 }
 
 export interface SourceOut {

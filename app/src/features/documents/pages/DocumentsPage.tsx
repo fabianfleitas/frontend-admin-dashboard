@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Upload, RefreshCw, BookOpen } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Upload, RefreshCw, BookOpen, FolderTree } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { SearchBar } from '@/components/common/SearchBar'
 import { Pagination } from '@/components/common/Pagination'
@@ -11,6 +12,7 @@ import { useCategoriesLookup } from '../hooks/useCategories'
 import { DocumentsTable } from '../components/DocumentsTable'
 import { DocumentDrawer } from '../components/DocumentDrawer'
 import { UploadDialog } from '../components/UploadDialog'
+import { CategoriesDialog } from '../components/CategoriesDialog'
 import type { DocumentStatus } from '../types'
 
 const PAGE_SIZE = 20
@@ -33,9 +35,36 @@ export function DocumentsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL')
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const { id } = useParams()
+  const navigate = useNavigate()
 
   const documentsQuery = useDocuments({ limit: PAGE_SIZE, offset })
   const { active, byId } = useCategoriesLookup()
+
+  // Deep-linking: /documents/:id abre el drawer del documento.
+  useEffect(() => {
+    if (id === undefined) {
+      setSelectedId(null)
+      return
+    }
+    const num = Number(id)
+    if (Number.isNaN(num)) {
+      navigate('/documents', { replace: true })
+      return
+    }
+    setSelectedId(num)
+  }, [id, navigate])
+
+  function handleSelect(docId: number) {
+    setSelectedId(docId)
+    navigate(`/documents/${docId}`)
+  }
+
+  function handleCloseDrawer() {
+    setSelectedId(null)
+    navigate('/documents')
+  }
 
   const categoryOptions = [
     { value: 'ALL', label: 'Todas las categorías' },
@@ -53,10 +82,16 @@ export function DocumentsPage() {
             Gestión documental, versiones y reindexación del sistema RAG.
           </p>
         </div>
-        <Button onClick={() => setUploadOpen(true)}>
-          <Upload size={16} aria-hidden />
-          Subir documento
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" onClick={() => setCategoriesOpen(true)}>
+            <FolderTree size={16} aria-hidden />
+            Gestionar categorías
+          </Button>
+          <Button onClick={() => setUploadOpen(true)}>
+            <Upload size={16} aria-hidden />
+            Subir documento
+          </Button>
+        </div>
       </div>
 
       {/* Barra superior */}
@@ -118,7 +153,7 @@ export function DocumentsPage() {
         <>
           <DocumentsTable
             documents={documentsQuery.data.items}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
             selectedId={selectedId}
             filters={{ search, status, category: categoryFilter }}
             categoryNames={byId}
@@ -132,8 +167,9 @@ export function DocumentsPage() {
         </>
       )}
 
-      <DocumentDrawer documentoId={selectedId} onClose={() => setSelectedId(null)} />
+      <DocumentDrawer documentoId={selectedId} onClose={handleCloseDrawer} />
       <UploadDialog open={uploadOpen} onClose={() => setUploadOpen(false)} />
+      <CategoriesDialog open={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
     </div>
   )
 }

@@ -29,4 +29,28 @@ export interface MemberIn {
   tipo_miembro: string
 }
 
+export interface InstitutionIn {
+  codigo?: string | null
+  nombre: string
+  nombre_comercial?: string | null
+  ciudad?: string | null
+  pais?: string | null
+  direccion?: string | null
+  email_contacto?: string | null
+  telefono_contacto?: string | null
+}
+
+export interface PlanIn {
+  codigo?: string | null
+  nombre: string
+  descripcion?: string | null
+  precio?: number | null
+  moneda?: string | null
+  intervalo?: string | null
+  max_documentos?: number | null
+  max_usuarios?: number | null
+  max_estudiantes?: number | null
+  features?: Record<string, unknown> | null
+}
+
 

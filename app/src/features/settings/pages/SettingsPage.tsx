@@ -3,6 +3,7 @@ import { useReady } from '@/features/dashboard/hooks/useReady'
 import { useMetrics } from '@/features/dashboard/hooks/useMetrics'
 import { useConfig } from '../hooks/useConfig'
 import { useUpdateConfig } from '../hooks/useUpdateConfig'
+import { NotifSettings } from '../components/NotifSettings'
 import { Card } from '@/components/common/Card'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Skeleton } from '@/components/feedback/Skeleton'
@@ -123,6 +124,8 @@ export function SettingsPage() {
               ))}
             </div>
           </section>
+
+          <NotifSettings />
         </>
       )}
     </div>

@@ -28,6 +28,8 @@ export interface MetricsOut {
   avg_response_time_voice: number
   avg_response_time_text: number
   series: MetricSeriesPoint[]
+  top_documents: DocumentMetricOut[]
+  documents_by_category: CategoryMetricOut[]
   desde: string | null
   hasta: string | null
   categoria_id: number | null
@@ -46,9 +48,23 @@ export interface MetricSeriesPoint {
   llm_failed: number
 }
 
+export interface DocumentMetricOut {
+  documento_id: number
+  titulo: string | null
+  consultas: number
+}
+
+export interface CategoryMetricOut {
+  categoria_id: number | null
+  nombre: string | null
+  consultas: number
+}
+
 export interface MetricsFilters {
   desde?: string
   hasta?: string
   categoria_id?: number
+  modelo?: string
+  documento_id?: number
   granularidad?: 'day' | 'week' | 'month'
 }

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { RefreshCw, Eye } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { SearchBar } from '@/components/common/SearchBar'
@@ -15,12 +16,38 @@ export function ConversationsPage() {
   const [search, setSearch] = useState('')
   const [includeHidden, setIncludeHidden] = useState(false)
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const { id } = useParams()
+  const navigate = useNavigate()
 
   const conversationsQuery = useConversations({
     limit: PAGE_SIZE,
     offset,
     includeHidden,
   })
+
+  // Deep-linking: /conversations/:id abre el drawer de la conversación.
+  useEffect(() => {
+    if (id === undefined) {
+      setSelectedId(null)
+      return
+    }
+    const num = Number(id)
+    if (Number.isNaN(num)) {
+      navigate('/conversations', { replace: true })
+      return
+    }
+    setSelectedId(num)
+  }, [id, navigate])
+
+  function handleSelect(conversationId: number) {
+    setSelectedId(conversationId)
+    navigate(`/conversations/${conversationId}`)
+  }
+
+  function handleCloseDrawer() {
+    setSelectedId(null)
+    navigate('/conversations')
+  }
 
   return (
     <div className="space-y-6">
@@ -92,7 +119,7 @@ export function ConversationsPage() {
         <>
           <ConversationsTable
             conversations={conversationsQuery.data.items}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
             selectedId={selectedId}
             search={search}
           />
@@ -105,7 +132,7 @@ export function ConversationsPage() {
         </>
       )}
 
-      <ConversationDrawer conversationId={selectedId} onClose={() => setSelectedId(null)} />
+      <ConversationDrawer conversationId={selectedId} onClose={handleCloseDrawer} />
     </div>
   )
 }

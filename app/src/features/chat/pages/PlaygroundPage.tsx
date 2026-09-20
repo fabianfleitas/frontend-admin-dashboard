@@ -7,11 +7,14 @@ import { ConversationPanel } from '../components/ConversationPanel'
 import { ContextPanel } from '../components/ContextPanel'
 import { MetricsCard } from '../components/MetricsCard'
 import { FeedbackButtons } from '../components/FeedbackButtons'
+import { AudioPlayer } from '../components/AudioPlayer'
 import { useChatQuery } from '../hooks/useChatQuery'
 import { useCreateConversation } from '../hooks/useCreateConversation'
+import { useSendVoice } from '../hooks/useSendVoice'
+import { ApiError } from '@/lib/http'
 import { toast } from '@/stores/toast.store'
 import { isAssistantMessage } from '../types'
-import type { MessageOut, SourceOut } from '../types'
+import type { AudioInteractionOut, MessageOut, SourceOut } from '../types'
 
 export function PlaygroundPage() {
   const [conversationId, setConversationId] = useState<number | null>(null)
@@ -19,11 +22,14 @@ export function PlaygroundPage() {
   const [sources, setSources] = useState<SourceOut[]>([])
   const [input, setInput] = useState('')
   const [lastQuery, setLastQuery] = useState<string | null>(null)
+  const [audioInteraction, setAudioInteraction] = useState<AudioInteractionOut | null>(null)
 
   const createConversation = useCreateConversation()
   const chatQuery = useChatQuery()
+  const voiceQuery = useSendVoice()
 
-  const isLoading = createConversation.isPending || chatQuery.isPending
+  const isLoading =
+    createConversation.isPending || chatQuery.isPending || voiceQuery.isPending
   const lastAssistant = [...messages].reverse().find((m) => isAssistantMessage(m)) ?? null
 
   async function ensureConversation(): Promise<number | null> {
@@ -39,19 +45,12 @@ export function PlaygroundPage() {
     }
   }
 
-  async function handleSend() {
-    const text = input.trim()
-    if (!text || isLoading) return
-
-    setLastQuery(text)
-    setInput('')
-
-    // Mensaje optimista del usuario (se reemplaza por el persistido).
-    const optimisticUser: MessageOut = {
+  function optimisticUser(contenido: string): MessageOut {
+    return {
       id: -Math.floor(Math.random() * 100000),
       conversacion_id: conversationId ?? -1,
       rol_mensaje: 'USER' as const,
-      contenido_texto: text,
+      contenido_texto: contenido,
       proveedor_ia: null,
       modelo_ia: null,
       temperatura: null,
@@ -61,11 +60,23 @@ export function PlaygroundPage() {
       fecha_envio: new Date().toISOString(),
       audit_id: null,
     }
-    setMessages((prev) => [...prev, optimisticUser])
+  }
+
+  async function handleSend() {
+    const text = input.trim()
+    if (!text || isLoading) return
+
+    setLastQuery(text)
+    setInput('')
+    setAudioInteraction(null)
+
+    // Mensaje optimista del usuario (se reemplaza por el persistido).
+    const optimistic = optimisticUser(text)
+    setMessages((prev) => [...prev, optimistic])
 
     const convId = await ensureConversation()
     if (convId === null) {
-      setMessages((prev) => prev.filter((m) => m !== optimisticUser))
+      setMessages((prev) => prev.filter((m) => m !== optimistic))
       setInput(text)
       return
     }
@@ -76,12 +87,12 @@ export function PlaygroundPage() {
         message: text,
       })
       setMessages((prev) => {
-        const withoutOptimistic = prev.filter((m) => m !== optimisticUser)
+        const withoutOptimistic = prev.filter((m) => m !== optimistic)
         return [...withoutOptimistic, result.user_message, result.assistant_message]
       })
       setSources(result.sources)
     } catch (err) {
-      setMessages((prev) => prev.filter((m) => m !== optimisticUser))
+      setMessages((prev) => prev.filter((m) => m !== optimistic))
       setInput(text)
       toast.error(
         'No fue posible obtener la respuesta.',
@@ -90,9 +101,45 @@ export function PlaygroundPage() {
     }
   }
 
+  async function handleSendVoice(file: File) {
+    if (isLoading) return
+    setAudioInteraction(null)
+
+    // Mensaje optimista del usuario (se reemplaza por el persistido con la transcripción).
+    const optimistic = optimisticUser('[Audio]')
+    setMessages((prev) => [...prev, optimistic])
+
+    const convId = await ensureConversation()
+    if (convId === null) {
+      setMessages((prev) => prev.filter((m) => m !== optimistic))
+      return
+    }
+
+    try {
+      const result = await voiceQuery.mutateAsync({ conversationId: convId, file })
+      setMessages((prev) => {
+        const withoutOptimistic = prev.filter((m) => m !== optimistic)
+        return [...withoutOptimistic, result.user_message, result.assistant_message]
+      })
+      setSources(result.sources)
+      setAudioInteraction(result.audio_interaction)
+    } catch (err) {
+      setMessages((prev) => prev.filter((m) => m !== optimistic))
+      if (err instanceof ApiError && err.status === 503) {
+        toast.error('No fue posible transcribir el audio. Intenta nuevamente.')
+      } else {
+        toast.error(
+          'No fue posible enviar el audio.',
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }
+  }
+
   async function handleRegenerate() {
     if (!lastQuery || isLoading || conversationId === null) return
     setInput('')
+    setAudioInteraction(null)
     try {
       const result = await chatQuery.mutateAsync({
         conversation_id: conversationId,
@@ -114,11 +161,13 @@ export function PlaygroundPage() {
     setSources([])
     setInput('')
     setLastQuery(null)
+    setAudioInteraction(null)
   }
 
   function handleClear() {
     setMessages([])
     setSources([])
+    setAudioInteraction(null)
   }
 
   return (
@@ -148,6 +197,7 @@ export function PlaygroundPage() {
             input={input}
             onInputChange={setInput}
             onSend={handleSend}
+            onSendVoice={handleSendVoice}
             onNewConversation={handleNewConversation}
             onClear={handleClear}
             disabled={isLoading}
@@ -184,16 +234,17 @@ export function PlaygroundPage() {
                 </span>
               )}
             </div>
+            {audioInteraction?.ruta_audio_respuesta && (
+              <div className="pt-3">
+                <AudioPlayer audioInteractionId={audioInteraction.id} />
+              </div>
+            )}
           </Card>
 
           <MetricsCard message={lastAssistant} />
           <ContextPanel sources={sources} lastAssistantMessage={lastAssistant} />
         </div>
       </div>
-
-      <p className="text-xs text-muted-foreground">
-        Voz opcional (`POST /api/chat/voice`) no implementada en MVP — Doc 08 §Integración con audio.
-      </p>
     </div>
   )
 }

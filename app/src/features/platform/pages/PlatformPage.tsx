@@ -9,6 +9,8 @@ import { usePlatformPlans } from '../hooks/usePlatformPlans'
 import { usePlatformSubscriptions } from '../hooks/usePlatformSubscriptions'
 import { usePlatformPagos } from '../hooks/usePlatformPagos'
 import { usePlatformComprobantes } from '../hooks/usePlatformComprobantes'
+import { InstitutionsDialog } from '../components/InstitutionsDialog'
+import { PlansDialog } from '../components/PlansDialog'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { SectionTitle } from '@/components/common/SectionTitle'
@@ -18,7 +20,8 @@ import { AuditTable } from '@/features/audit/components/AuditTable'
 import { UsersTable } from '@/features/users/components/UsersTable'
 import { MetricsIA } from '@/features/dashboard/components/MetricsIA'
 import { usePlatformMetrics } from '../hooks/usePlatformMetrics'
-import { Eye, Trash2, Plus, Building2, BarChart3, ShieldCheck, Users, CreditCard, FileText, Landmark } from 'lucide-react'
+import { Eye, Trash2, Plus, Building2, BarChart3, ShieldCheck, Users, CreditCard, FileText, Landmark, Download } from 'lucide-react'
+import { exportCsv } from '@/lib/download'
 
 type Tab = 'institutions' | 'metrics' | 'audit' | 'users' | 'plans' | 'subscriptions' | 'pagos' | 'comprobantes'
 
@@ -32,6 +35,8 @@ export function PlatformPage() {
   const [pagosOffset, setPagosOffset] = useState(0)
   const [comprobantesOffset, setComprobantesOffset] = useState(0)
   const [subsOffset, setSubsOffset] = useState(0)
+  const [institutionsOpen, setInstitutionsOpen] = useState(false)
+  const [plansOpen, setPlansOpen] = useState(false)
 
   const insts = usePlatformInstitutions()
   const members = useInstitutionMembers(selectedId)
@@ -78,7 +83,15 @@ export function PlatformPage() {
       {tab === 'institutions' && (
         <>
           <Card className="space-y-3">
-            <SectionTitle title="Instituciones" description="GET /api/platform/institutions" />
+            <SectionTitle
+              title="Instituciones"
+              description="GET /api/platform/institutions"
+              action={
+                <Button size="sm" variant="secondary" onClick={() => setInstitutionsOpen(true)}>
+                  <Plus size={14} aria-hidden /> Gestionar instituciones
+                </Button>
+              }
+            />
             {insts.isLoading ? <Skeleton className="h-24 w-full" /> : (
               <div className="overflow-auto">
                 <table className="w-full text-sm"><thead><tr className="border-b"><th className="text-left py-2 px-2">ID</th><th className="text-left py-2 px-2">Nombre</th><th className="text-left py-2 px-2">Estado</th><th className="py-2 px-2"></th></tr></thead>
@@ -117,7 +130,15 @@ export function PlatformPage() {
 
       {tab === 'metrics' && (
         <Card className="space-y-3">
-          <SectionTitle title="Métricas globales" description="GET /api/platform/metrics" />
+          <SectionTitle
+            title="Métricas globales"
+            description="GET /api/platform/metrics"
+            action={
+              <Button variant="secondary" size="sm" onClick={() => void exportCsv('/api/platform/metrics/export', 'metrics.csv')}>
+                <Download size={14} aria-hidden /> Exportar CSV
+              </Button>
+            }
+          />
           {metricsQ.isLoading ? <Skeleton className="h-24 w-full" /> : metricsQ.data ? (
             <MetricsIA metrics={metricsQ.data} />
           ) : <div className="text-sm text-muted-foreground">Sin datos.</div>}
@@ -126,6 +147,11 @@ export function PlatformPage() {
 
       {tab === 'audit' && (
         <>
+          <div className="flex items-center justify-end">
+            <Button variant="secondary" size="sm" onClick={() => void exportCsv('/api/platform/audit/export', 'audit.csv')}>
+              <Download size={14} aria-hidden /> Exportar CSV
+            </Button>
+          </div>
           <AuditTable logs={auditQ.data?.items ?? []} loading={auditQ.isLoading} onSelect={() => {}} />
           {auditQ.data && <Pagination total={auditQ.data.pagination.total} limit={20} offset={auditOffset} onPageChange={(o) => setAuditOffset(o)} />}
         </>
@@ -139,9 +165,20 @@ export function PlatformPage() {
       )}
 
       {tab === 'plans' && (
-        <div className="grid gap-3 md:grid-cols-2">{(plansQ.data ?? []).map((p) => (
-          <Card key={p.id} className="p-3 space-y-1"><div className="font-medium">{p.nombre}</div><div className="text-xs text-muted-foreground">{p.precio} {p.moneda} / {p.intervalo}</div><div className="text-xs">Máx. docs: {p.max_documentos} · usuarios: {p.max_usuarios}</div></Card>
-        ))}</div>
+        <Card className="space-y-3">
+          <SectionTitle
+            title="Planes"
+            description="GET /api/platform/plans"
+            action={
+              <Button size="sm" variant="secondary" onClick={() => setPlansOpen(true)}>
+                <Plus size={14} aria-hidden /> Gestionar planes
+              </Button>
+            }
+          />
+          <div className="grid gap-3 md:grid-cols-2">{(plansQ.data ?? []).map((p) => (
+            <Card key={p.id} className="p-3 space-y-1"><div className="font-medium">{p.nombre}</div><div className="text-xs text-muted-foreground">{p.precio} {p.moneda} / {p.intervalo}</div><div className="text-xs">Máx. docs: {p.max_documentos} · usuarios: {p.max_usuarios}</div></Card>
+          ))}</div>
+        </Card>
       )}
 
       {tab === 'subscriptions' && (
@@ -164,12 +201,20 @@ export function PlatformPage() {
 
       {tab === 'comprobantes' && (
         <>
+          <div className="flex items-center justify-end">
+            <Button variant="secondary" size="sm" onClick={() => void exportCsv('/api/platform/comprobantes/export', 'comprobantes.csv')}>
+              <Download size={14} aria-hidden /> Exportar CSV
+            </Button>
+          </div>
           <table className="w-full text-sm"><thead><tr className="border-b"><th>Tipo</th><th>Número</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>
             {(comprobantesQ.data?.items ?? []).map((c) => <tr key={c.id} className="border-b"><td>{c.tipo_comprobante}</td><td>{c.numero}</td><td>{c.estado}</td><td>{c.fecha_emision}</td></tr>)}
           </tbody></table>
           {comprobantesQ.data && <Pagination total={comprobantesQ.data.pagination.total} limit={20} offset={comprobantesOffset} onPageChange={(o) => setComprobantesOffset(o)} />}
         </>
       )}
+
+      <InstitutionsDialog open={institutionsOpen} onClose={() => setInstitutionsOpen(false)} />
+      <PlansDialog open={plansOpen} onClose={() => setPlansOpen(false)} />
     </div>
   )
 }

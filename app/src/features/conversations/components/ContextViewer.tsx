@@ -15,7 +15,7 @@ export function ContextViewer({ sources, lastAssistantMessage }: ContextViewerPr
       <EmptyState
         icon={<FileText size={16} />}
         title="Sin contexto registrado."
-        description="El backend no retorna fuentes recuperadas para esta conversación en el listado."
+        description="Esta conversación no tiene documentos recuperados (respuesta sin RAG o sin mensajes del asistente)."
       />
     )
   }

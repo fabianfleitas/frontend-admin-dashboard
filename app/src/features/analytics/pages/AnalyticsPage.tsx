@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { BarChart3, MessagesSquare, FileText, ThumbsUp, Clock, Target, Gauge, HeartPulse } from 'lucide-react'
+import { BarChart3, MessagesSquare, FileText, ThumbsUp, Clock, Target, Gauge, HeartPulse, Download } from 'lucide-react'
+import { Button } from '@/components/common/Button'
+import { exportCsv } from '@/lib/download'
 import { Card } from '@/components/common/Card'
 import { MetricCard } from '@/features/dashboard/components/MetricCard'
 import { MetricsIA } from '@/features/dashboard/components/MetricsIA'
@@ -10,6 +12,7 @@ import { useAnalytics } from '../hooks/useAnalytics'
 import { FiltersPanel } from '../components/FiltersPanel'
 import { ChartLine } from '../components/ChartLine'
 import { ChartBar } from '../components/ChartBar'
+import { useDocuments } from '@/features/documents/hooks/useDocuments'
 import { DEFAULT_FILTERS, type AnalyticsFilters, type ChartPoint } from '../types'
 
 function formatNumber(v: number): string {
@@ -30,6 +33,7 @@ function formatLatency(ms: number): string {
 export function AnalyticsPage() {
   const [filters, setFilters] = useState<AnalyticsFilters>(DEFAULT_FILTERS)
   const analyticsQuery = useAnalytics(filters)
+  const documentsQuery = useDocuments({ limit: 100 })
   const metrics = analyticsQuery.data
 
   // Series temporales: usar series entregadas por /api/admin/metrics
@@ -37,16 +41,55 @@ export function AnalyticsPage() {
   const queriesTrend: ChartPoint[] = series.map((s) => ({ label: s.fecha, value: s.conversaciones }))
   const tokensTrend: ChartPoint[] = series.map((s) => ({ label: s.fecha, value: s.tokens_input + s.tokens_output }))
 
+  // Opciones de filtro: modelos con consumo reportado + documentos existentes
+  const modelOptions = Object.keys(metrics?.tokens_by_model ?? {}).map((m) => ({
+    value: m,
+    label: m,
+  }))
+  const documentOptions = (documentsQuery.data?.items ?? []).map((d) => ({
+    value: String(d.id),
+    label: d.titulo,
+  }))
+
+  // Tokens por modelo (agregados por /api/admin/metrics)
+  const tokensByModelChart: ChartPoint[] = Object.entries(metrics?.tokens_by_model ?? {})
+    .map(([model, breakdown]) => ({
+      label: model.split('/').pop() ?? model,
+      value: Object.values(breakdown ?? {}).reduce((a, b) => a + (Number(b) || 0), 0),
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8)
+
+  // Documentos más consultados y distribución por categoría (agregados por /api/admin/metrics)
+  const topDocumentsChart: ChartPoint[] = (metrics?.top_documents ?? []).map((d) => ({
+    label: d.titulo ?? `#${d.documento_id}`,
+    value: d.consultas,
+  }))
+  const byCategoryChart: ChartPoint[] = (metrics?.documents_by_category ?? []).map((c) => ({
+    label: c.nombre ?? 'Sin categoría',
+    value: c.consultas,
+  }))
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Indicadores operativos y de uso del sistema RAG.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Analytics</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Indicadores operativos y de uso del sistema RAG.
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => void exportCsv('/api/admin/metrics/export', 'metrics.csv')}>
+          <Download size={14} aria-hidden /> Exportar CSV
+        </Button>
       </div>
 
-      <FiltersPanel filters={filters} onChange={setFilters} />
+      <FiltersPanel
+        filters={filters}
+        onChange={setFilters}
+        modelOptions={modelOptions}
+        documentOptions={documentOptions}
+      />
 
       {analyticsQuery.isError ? (
         <ErrorState
@@ -90,8 +133,19 @@ export function AnalyticsPage() {
           <section className="grid gap-4 lg:grid-cols-2">
             <ChartLine title="Tendencia de consultas" data={queriesTrend} />
             <ChartLine title="Tokens (input + output)" data={tokensTrend} color="#16a34a" />
-            <ChartBar title="Documentos más consultados" data={[]} />
-            <ChartBar title="Distribución por categoría" data={[]} />
+            <ChartBar title="Tokens por modelo" data={tokensByModelChart} color="#0ea5e9" />
+            <ChartBar
+              title="Documentos más consultados"
+              data={topDocumentsChart}
+              color="#0ea5e9"
+              emptyMessage="Aún no hay documentos consultados para los filtros seleccionados."
+            />
+            <ChartBar
+              title="Distribución por categoría"
+              data={byCategoryChart}
+              color="#8b5cf6"
+              emptyMessage="Aún no hay consultas por categoría para los filtros seleccionados."
+            />
           </section>
         </>
       )}

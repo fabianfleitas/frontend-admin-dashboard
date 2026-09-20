@@ -16,6 +16,8 @@ function buildFilters(f: AnalyticsFilters) {
     desde,
     hasta,
     categoria_id: f.category ? Number(f.category) : undefined,
+    modelo: f.modelo ? String(f.modelo) : undefined,
+    documento_id: f.documentoId ?? undefined,
     granularidad: 'day' as const,
   }
 }

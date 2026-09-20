@@ -168,6 +168,7 @@ features/documents/
 -   DocumentDrawer
 -   VersionTimeline
 -   UploadDialog
+-   CategoriesDialog
 -   StatusBadge
 -   SearchBar
 -   Filters
@@ -224,7 +225,9 @@ CU-05 Desactivar documento
 
 Nivel 2
 
--   Gestión de categorías.
+-   ~~Gestión de categorías~~ (implementada el 2026-09-20: CRUD vía
+    `CategoriesDialog` desde "Gestionar categorías"; el drawer de detalle
+    muestra el nombre de categoría).
 -   Indexación masiva.
 -   Drag & Drop múltiple.
 -   Comparación entre versiones.

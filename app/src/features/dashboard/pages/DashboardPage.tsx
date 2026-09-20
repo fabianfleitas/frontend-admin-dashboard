@@ -17,7 +17,6 @@ import { ErrorState } from '@/components/feedback/ErrorState'
 import { EmptyState } from '@/components/feedback/EmptyState'
 import { Skeleton } from '@/components/feedback/Skeleton'
 import { Card } from '@/components/common/Card'
-import { useAuthStore } from '@/stores/auth.store'
 import { useMetrics } from '../hooks/useMetrics'
 import { useReady } from '../hooks/useReady'
 import { MetricCard } from '../components/MetricCard'
@@ -25,6 +24,7 @@ import { MetricsIA } from '../components/MetricsIA'
 import { SystemStatus } from '../components/SystemStatus'
 import { ActivityTimeline } from '../components/ActivityTimeline'
 import { QuickActionCard } from '../components/QuickActionCard'
+import { useAuthCapabilities } from '@/features/auth/hooks/useAuthCapabilities'
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat('es').format(value)
@@ -45,7 +45,7 @@ function formatScore(value: number): string {
 export function DashboardPage() {
   const metricsQuery = useMetrics()
   const readyQuery = useReady()
-  const role = useAuthStore((s) => s.profile?.role)
+  const { isStaff } = useAuthCapabilities()
 
   const metrics = metricsQuery.data
   const ready = readyQuery.data
@@ -53,7 +53,7 @@ export function DashboardPage() {
   const metricsError = metricsQuery.isError
   const readyError = readyQuery.isError
 
-  const canManageDocuments = role === 'ADMIN' || role === 'STAFF'
+  const canManageDocuments = isStaff
   const quickActions = [
     { to: '/documents', label: 'Subir documento', description: 'Knowledge Base', icon: Upload, guard: canManageDocuments },
     { to: '/documents', label: 'Knowledge Base', description: 'Gestionar documentos', icon: BookOpen, guard: canManageDocuments },

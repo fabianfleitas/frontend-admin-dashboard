@@ -134,13 +134,15 @@ Visualización en modo solo lectura.
 
 # Integración con audio
 
-Preparado para:
+Implementado (2026-09-20):
 
--   Grabar audio.
--   Reproducir respuesta.
--   Visualizar transcripción.
+-   Grabar audio (MediaRecorder + getUserMedia) o adjuntar un archivo de audio
+    (`accept="audio/*"`).
+-   Enviar el audio a `POST /api/chat/voice` con placeholder optimista `[Audio]`.
+-   Reproducir la respuesta de voz vía `GET /api/chat/audio/{audio_interaction_id}`.
 
-No obligatorio para el MVP.
+Pendiente de validar con el STT del backend: el formato de grabación del
+navegador (webm/mp4) debe ser aceptado por el servicio de transcripción.
 
 ------------------------------------------------------------------------
 
@@ -164,6 +166,8 @@ features/chat/
 -   RetrievedDocumentsTable
 -   MetricsCard
 -   FeedbackButtons
+-   AudioRecorder
+-   AudioPlayer
 
 ------------------------------------------------------------------------
 
@@ -175,6 +179,7 @@ Funciones:
 
 -   sendChat()
 -   sendVoice()
+-   getAudio()
 -   sendFeedback()
 
 ------------------------------------------------------------------------
@@ -183,6 +188,7 @@ Funciones:
 
 -   ChatQueryIn / ChatQueryOut
 -   ChatFeedbackIn / ChatFeedbackOut
+-   ChatVoiceOut / AudioInteractionOut
 -   SourceOut
 -   MessageOut
 
@@ -208,7 +214,7 @@ Error
 
 CU-01 Realizar consulta.
 
-CU-02 Enviar audio.
+CU-02 Enviar audio (implementado).
 
 CU-03 Analizar documentos recuperados.
 
@@ -238,8 +244,9 @@ CU-05 Registrar feedback.
 -   Chunks: SourceOut solo expone document_id, document, page y
     similarity_score; no se muestran chunks individuales.
 -   Prompt completo: no es retornado por el backend (Nivel 2).
--   Voz: sendVoice existe en el servicio pero no está integrado en la UI
-    (opcional MVP).
+-   Voz: integrada en la UI (grabación MediaRecorder + adjuntar archivo +
+    reproducción de la respuesta). El formato de grabación del navegador
+    (webm/mp4) está pendiente de validar con el STT del backend.
 
 ------------------------------------------------------------------------
 

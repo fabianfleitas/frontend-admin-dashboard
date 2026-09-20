@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { usePlan } from '../hooks/usePlan'
-import { useSubscription } from '../hooks/usePlan'
+import { usePlan, useSubscription } from '../hooks/usePlan'
+import { usePlans } from '../hooks/usePlans'
 import { usePagos } from '../hooks/usePagos'
 import { useComprobantes } from '../hooks/useComprobantes'
 import { useStripeSubscription } from '../hooks/useStripeSubscription'
@@ -10,6 +10,7 @@ import { usePortalSession } from '../hooks/usePortalSession'
 import { useCancelSubscription } from '../hooks/useCancelSubscription'
 import { useReactivateSubscription } from '../hooks/useReactivateSubscription'
 import { useSyncPlan } from '../hooks/useSyncPlan'
+import { useChangePlan } from '../hooks/useChangePlan'
 import { Card } from '@/components/common/Card'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Skeleton } from '@/components/feedback/Skeleton'
@@ -17,18 +18,23 @@ import { ErrorState } from '@/components/feedback/ErrorState'
 import { Pagination } from '@/components/common/Pagination'
 import { Button } from '@/components/common/Button'
 import { Modal } from '@/components/common/Modal'
+import { Select } from '@/components/forms/Select'
 import { toast } from '@/stores/toast.store'
 import { isNotFound } from '@/lib/http'
-import { CreditCard, Trash2, RefreshCcw, ExternalLink, Zap } from 'lucide-react'
+import { CreditCard, Trash2, RefreshCcw, ExternalLink, Zap, Repeat, Download } from 'lucide-react'
+import { exportCsv } from '@/lib/download'
 
 export function BillingPage() {
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [changeOpen, setChangeOpen] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState('')
   const [historyOffset, setHistoryOffset] = useState(0)
   const [pagosOffset, setPagosOffset] = useState(0)
   const [comprobantesOffset, setComprobantesOffset] = useState(0)
 
   const planQuery = usePlan()
   const subQuery = useSubscription()
+  const plansQuery = usePlans()
   const pagosQuery = usePagos({ limit: 20, offset: pagosOffset })
   const comprobantesQuery = useComprobantes({ limit: 20, offset: comprobantesOffset })
   const stripeSub = useStripeSubscription()
@@ -51,6 +57,7 @@ export function BillingPage() {
   const cancelSub = useCancelSubscription()
   const reactivate = useReactivateSubscription()
   const syncPlan = useSyncPlan()
+  const changePlan = useChangePlan()
 
   const loading = planQuery.isLoading || subQuery.isLoading || stripeSub.isLoading
   const error = (planQuery.isError && !isNotFound(planQuery.error)) || (subQuery.isError && !isNotFound(subQuery.error))
@@ -98,6 +105,28 @@ export function BillingPage() {
     if (!plan) return
     syncPlan.mutate({ plan_id: plan.id })
   }
+
+  const handleChangePlan = () => {
+    const planId = Number(selectedPlanId)
+    if (!planId) return
+    changePlan.mutate(
+      { plan_id: planId },
+      {
+        onSuccess: () => {
+          setChangeOpen(false)
+          setSelectedPlanId('')
+          toast.success('Plan actualizado', 'La suscripción fue cambiada al plan seleccionado.')
+          void planQuery.refetch()
+          void subQuery.refetch()
+        },
+        onError: (e: any) => toast.error('Error al cambiar de plan', e?.detail ?? 'Intenta de nuevo.'),
+      },
+    )
+  }
+
+  const changeOptions = (plansQuery.data ?? [])
+    .filter((p) => p.id !== plan?.id)
+    .map((p) => ({ value: String(p.id), label: `${p.nombre} — ${p.precio ?? '—'} ${p.moneda ?? ''}` }))
 
   return (
     <div className="space-y-6">
@@ -182,7 +211,9 @@ export function BillingPage() {
               <Button onClick={handleSyncPlan} disabled={syncPlan.isPending || !plan} variant="ghost" className="gap-2">
                 <Zap size={14} /> Sincronizar plan con Stripe
               </Button>
-              <Button disabled variant="secondary" className="gap-2 opacity-60" title="Requiere GET /api/admin/plans (pendiente backend)">Cambiar plan</Button>
+              <Button onClick={() => setChangeOpen(true)} disabled={changePlan.isPending || !plan || !sub || plansQuery.isLoading} variant="secondary" className="gap-2">
+                <Repeat size={14} /> Cambiar plan
+              </Button>
             </div>
           </Card>
 
@@ -214,7 +245,15 @@ export function BillingPage() {
               )}
             </Card>
             <Card className="space-y-3">
-              <SectionTitle title="Comprobantes" description="GET /api/admin/comprobantes" />
+              <SectionTitle
+                title="Comprobantes"
+                description="GET /api/admin/comprobantes"
+                action={
+                  <Button variant="secondary" size="sm" onClick={() => void exportCsv('/api/admin/comprobantes/export', 'comprobantes.csv')}>
+                    <Download size={14} aria-hidden /> Exportar CSV
+                  </Button>
+                }
+              />
               {comprobantesQuery.isLoading ? <Skeleton className="h-24 w-full" /> : (
                 <>
                   <table className="w-full text-sm"><thead><tr className="border-b"><th>Tipo</th><th>Número</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>
@@ -235,6 +274,30 @@ export function BillingPage() {
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setCancelOpen(false)}>Cancelar</Button>
               <Button variant="danger" size="sm" onClick={handleCancel} disabled={cancelSub.isPending}>{cancelSub.isPending ? 'Procesando...' : 'Confirmar cancelación'}</Button>
+            </div>
+          </Modal>
+
+          {/* Change plan modal */}
+          <Modal open={changeOpen} onClose={() => setChangeOpen(false)} title="Cambiar plan" description="La suscripción se actualizará al nuevo plan (con prorrateo en Stripe).">
+            <div className="space-y-3 text-sm">
+              {plansQuery.isLoading ? (
+                <Skeleton className="h-9 w-full" />
+              ) : changeOptions.length === 0 ? (
+                <div className="text-muted-foreground">No hay planes alternativos sincronizados con Stripe.</div>
+              ) : (
+                <Select
+                  value={selectedPlanId}
+                  onChange={setSelectedPlanId}
+                  options={changeOptions}
+                  placeholder="Selecciona un plan..."
+                />
+              )}
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setChangeOpen(false)}>Cancelar</Button>
+              <Button size="sm" onClick={handleChangePlan} disabled={changePlan.isPending || !selectedPlanId}>
+                {changePlan.isPending ? 'Procesando...' : 'Confirmar cambio'}
+              </Button>
             </div>
           </Modal>
         </>

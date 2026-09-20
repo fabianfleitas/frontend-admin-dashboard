@@ -8,6 +8,11 @@ interface FiltersPanelProps {
   onChange: (filters: AnalyticsFilters) => void
 }
 
+interface FilterOptions {
+  value: string
+  label: string
+}
+
 const PERIOD_OPTIONS = [
   { value: 'all', label: 'Todo el periodo' },
   { value: 'day', label: 'Hoy' },
@@ -15,12 +20,19 @@ const PERIOD_OPTIONS = [
   { value: 'month', label: 'Este mes' },
 ]
 
-export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
+export function FiltersPanel({
+  filters,
+  onChange,
+  modelOptions = [],
+  documentOptions = [],
+}: FiltersPanelProps & { modelOptions?: FilterOptions[]; documentOptions?: FilterOptions[] }) {
   const categoriesQuery = useCategories()
-  const catOptions = (categoriesQuery.data?.items ?? []).map((c) => ({
-    value: String(c.id),
-    label: c.nombre,
-  }))
+  const catOptions = (categoriesQuery.data?.items ?? [])
+    .filter((c) => c.activo)
+    .map((c) => ({
+      value: String(c.id),
+      label: c.nombre,
+    }))
 
   return (
     <div className="space-y-3 rounded-lg border bg-surface px-4 py-3">
@@ -35,11 +47,25 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
           onChange={(v) => onChange({ ...filters, category: v ? Number(v) : '' })}
           options={[{ value: '', label: 'Todas las categorías' }, ...catOptions]}
         />
+        <Select
+          value={filters.modelo}
+          onChange={(v) => onChange({ ...filters, modelo: v })}
+          options={modelOptions}
+          placeholder="Todos los modelos"
+          aria-label="Filtrar por modelo"
+        />
+        <Select
+          value={filters.documentoId == null ? '' : String(filters.documentoId)}
+          onChange={(v) => onChange({ ...filters, documentoId: v ? Number(v) : null })}
+          options={documentOptions}
+          placeholder="Todos los documentos"
+          aria-label="Filtrar por documento"
+        />
       </div>
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Info size={12} aria-hidden />
-        Filtros de periodo y categoría enviados a{' '}
-        <code>GET /api/admin/metrics</code>. Filtros de modelo/documento no expuestos (Nivel 2).
+        Filtros de periodo, categoría, modelo y documento enviados a{' '}
+        <code>GET /api/admin/metrics</code>.
       </p>
     </div>
   )

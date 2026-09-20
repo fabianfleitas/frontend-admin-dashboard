@@ -1,5 +1,5 @@
 import { http } from '@/lib/http'
-import type { InstitutionOut, MemberOut, MemberIn } from '../types'
+import type { InstitutionOut, InstitutionIn, MemberOut, MemberIn, PlanIn } from '../types'
 import type { AuditLogOut } from '@/features/audit/types'
 import type { PlanOut, SubscriptionOut, PagoOut, ComprobanteOut } from '@/features/billing/types'
 import type { MetricsOut } from '@/features/dashboard/types'
@@ -12,6 +12,18 @@ export function listInstitutions(query?: { activo?: boolean }) {
 
 export function getInstitution(id: number) {
   return http.get<InstitutionOut>(`/api/platform/institutions/${id}`)
+}
+
+export function createInstitution(payload: InstitutionIn) {
+  return http.post<InstitutionOut>('/api/platform/institutions', { body: payload })
+}
+
+export function updateInstitution(id: number, payload: InstitutionIn) {
+  return http.put<InstitutionOut>(`/api/platform/institutions/${id}`, { body: payload })
+}
+
+export function deactivateInstitution(id: number) {
+  return http.delete(`/api/platform/institutions/${id}`)
 }
 
 export function listMembers(id: number) {
@@ -36,6 +48,18 @@ export function getPlatformAudit(params?: { limit?: number; offset?: number; des
 
 export function listPlatformPlans() {
   return http.get<PlanOut[]>('/api/platform/plans')
+}
+
+export function createPlan(payload: PlanIn) {
+  return http.post<PlanOut>('/api/platform/plans', { body: payload })
+}
+
+export function updatePlan(id: number, payload: PlanIn) {
+  return http.put<PlanOut>(`/api/platform/plans/${id}`, { body: payload })
+}
+
+export function deactivatePlan(id: number) {
+  return http.delete(`/api/platform/plans/${id}`)
 }
 
 export function listPlatformSubscriptions(params?: { limit?: number; offset?: number }) {

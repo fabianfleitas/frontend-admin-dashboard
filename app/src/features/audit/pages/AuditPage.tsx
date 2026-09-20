@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RefreshCw, Info } from 'lucide-react'
+import { RefreshCw, Info, Download } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { SearchBar } from '@/components/common/SearchBar'
 import { Pagination } from '@/components/common/Pagination'
@@ -7,6 +7,7 @@ import { ErrorState } from '@/components/feedback/ErrorState'
 import { AuditTable } from '../components/AuditTable'
 import { AuditDrawer } from '../components/AuditDrawer'
 import { useAudit } from '../hooks/useAudit'
+import { exportCsv } from '@/lib/download'
 import type { AuditLogOut } from '../types'
 
 const PAGE_SIZE = 20
@@ -45,6 +46,13 @@ export function AuditPage() {
             className={auditQuery.isFetching ? 'animate-spin' : ''}
           />
           Actualizar
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => void exportCsv('/api/admin/audit/export', 'audit.csv')}
+        >
+          <Download size={14} aria-hidden />
+          Exportar CSV
         </Button>
         <p className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
           <Info size={12} aria-hidden />

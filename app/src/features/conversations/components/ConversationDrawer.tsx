@@ -10,6 +10,7 @@ import { MetricsCard } from '@/features/chat/components/MetricsCard'
 import { useConversation } from '../hooks/useConversation'
 import { useHideConversation } from '../hooks/useHideConversation'
 import { MessageTimeline } from './MessageTimeline'
+import { ContextViewer } from './ContextViewer'
 import { formatDate } from '@/lib/utils'
 import { toast } from '@/stores/toast.store'
 import { isNotFound } from '@/lib/http'
@@ -102,6 +103,11 @@ export function ConversationDrawer({ conversationId, onClose }: ConversationDraw
             <div className="max-h-96 overflow-y-auto rounded-md border bg-background/40 p-3">
               <MessageTimeline messages={data.messages} />
             </div>
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle title="Contexto recuperado" />
+            <ContextViewer sources={lastAssistant?.sources ?? []} lastAssistantMessage={lastAssistant} />
           </section>
 
           <section className="space-y-3">

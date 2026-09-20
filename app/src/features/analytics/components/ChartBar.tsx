@@ -8,9 +8,10 @@ interface ChartBarProps {
   title: string
   data: ChartPoint[]
   color?: string
+  emptyMessage?: string
 }
 
-export function ChartBar({ title, data, color = '#4f46e5' }: ChartBarProps) {
+export function ChartBar({ title, data, color = '#4f46e5', emptyMessage }: ChartBarProps) {
   return (
     <Card className="space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
@@ -18,7 +19,7 @@ export function ChartBar({ title, data, color = '#4f46e5' }: ChartBarProps) {
         <EmptyState
           icon={<BarChart3 size={16} />}
           title="Sin datos disponibles."
-          description="El backend aún no expone series temporales (Nivel 2)."
+          description={emptyMessage ?? 'El backend aún no expone esta métrica agregada.'}
         />
       ) : (
         <div className="h-64">

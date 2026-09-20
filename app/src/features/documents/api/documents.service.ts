@@ -3,6 +3,7 @@ import type {
   AdminReindexOut,
   AdminUploadDocumentOut,
   AdminUploadVersionOut,
+  CategoryIn,
   CategoryOut,
   DocumentDetailOut,
   DocumentOut,
@@ -14,6 +15,18 @@ export function listCategories(params: ListDocumentsParams = {}) {
   return http.get<PaginatedResponse<CategoryOut>>('/api/admin/categories', {
     query: { limit: params.limit, offset: params.offset },
   })
+}
+
+export function createCategory(input: CategoryIn) {
+  return http.post<CategoryOut>('/api/admin/categories', { body: input })
+}
+
+export function updateCategory(categoriaId: number, input: CategoryIn) {
+  return http.put<CategoryOut>(`/api/admin/categories/${categoriaId}`, { body: input })
+}
+
+export function deleteCategory(categoriaId: number) {
+  return http.delete<void>(`/api/admin/categories/${categoriaId}`)
 }
 
 export function listDocuments(params: ListDocumentsParams = {}) {

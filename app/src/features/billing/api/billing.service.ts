@@ -23,6 +23,10 @@ export function getPlan(): Promise<PlanOut> {
   return http.get<PlanOut>('/api/admin/plan')
 }
 
+export function listPlans(): Promise<PlanOut[]> {
+  return http.get<PlanOut[]>('/api/admin/plans')
+}
+
 export function getSubscription(): Promise<SubscriptionOut> {
   return http.get<SubscriptionOut>('/api/admin/subscription')
 }

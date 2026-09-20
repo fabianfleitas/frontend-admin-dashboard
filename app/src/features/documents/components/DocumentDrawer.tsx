@@ -10,6 +10,7 @@ import { useDocument } from '../hooks/useDocument'
 import { useUploadVersion } from '../hooks/useUploadVersion'
 import { useReindex } from '../hooks/useReindex'
 import { useDeactivateDocument } from '../hooks/useDeactivateDocument'
+import { useCategoriesLookup } from '../hooks/useCategories'
 import { VersionTimeline } from './VersionTimeline'
 import { DocumentStatusBadge } from './DocumentStatusBadge'
 import { formatDate } from '@/lib/utils'
@@ -23,6 +24,7 @@ interface DocumentDrawerProps {
 
 export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
   const { data, isLoading, isError, error, refetch } = useDocument(documentoId)
+  const { getName } = useCategoriesLookup()
   const isError404 = isError && isNotFound(error)
   const uploadVersion = useUploadVersion()
   const reindex = useReindex()
@@ -141,8 +143,11 @@ export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
           <section className="space-y-2">
             <SectionTitle title="Información general" />
             <dl className="grid grid-cols-2 gap-2 text-sm">
-              <dt className="text-muted-foreground">Categoría ID</dt>
-              <dd className="font-medium text-foreground">{data.categoria_id ?? '—'}</dd>
+              <dt className="text-muted-foreground">Categoría</dt>
+              <dd className="font-medium text-foreground">
+                {getName(data.categoria_id) ??
+                  (data.categoria_id != null ? `#${data.categoria_id}` : '—')}
+              </dd>
               <dt className="text-muted-foreground">Código</dt>
               <dd className="font-medium text-foreground">{data.codigo_documento ?? '—'}</dd>
               <dt className="text-muted-foreground">Fecha creación</dt>

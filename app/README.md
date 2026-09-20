@@ -45,6 +45,7 @@ npm run lint        # oxlint
 npm run lint:fix   # oxlint --fix
 npm run format     # Prettier (src/)
 npm run typecheck  # tsc --noEmit (sin artefactos)
+npm test           # vitest run (unit tests)
 ```
 
 ## Arquitectura
@@ -61,17 +62,17 @@ src/
     layout/             Sidebar, Header, Breadcrumb, DashboardLayout
   features/
     auth/               Login con Google (Supabase OAuth)
-    dashboard/          KPIs + estado del sistema (GET /ready + /api/admin/metrics)
-    documents/          Knowledge Base (CRUD + versiones + reindex)
-    chat/               AI Agent Playground (POST /api/chat/query + feedback)
-    conversations/      Listado + drawer + ocultar (DELETE = soft-delete)
-    analytics/          KPIs + gráficos (Recharts)
-    audit/              Trazabilidad (GET /api/admin/audit)
-    users/              Listado read-only (GET /api/admin/users)
-    settings/           Vista solo-lectura (bloques LLM/Embedding/Storage/Vector pendientes en backend)
-    billing/            Módulo productivo (Fase 5): suscripción/pagos/comprobantes — lectura + acciones Stripe (checkout, portal, cancel/reactivate, sync-plan, historial)
-    institution/        Placeholder de rutas (Fase 5): institución/configuración — sin endpoints aún
-    platform/           Placeholder de rutas (Fase 5): superadmin — sin endpoints aún
+    dashboard/          KPIs + estado del sistema + actividad reciente (GET /ready + /api/admin/metrics + /api/admin/audit)
+    documents/          Knowledge Base (CRUD + versiones + reindex + gestión de categorías CRUD)
+    chat/               AI Agent Playground (POST /api/chat/query, voz POST /api/chat/voice con grabación/subida + reproducción, feedback)
+    conversations/      Listado + drawer (timeline + contexto recuperado + feedback) + ocultar (DELETE = soft-delete) + deep-linking
+    analytics/          KPIs + gráficos (Recharts) + filtros período/categoría/modelo/documento + export CSV
+    audit/              Trazabilidad (GET /api/admin/audit + export CSV)
+    users/              Listado read-only (GET /api/admin/users; columnas membresía/institución)
+    settings/           Lectura + edición de configuración institucional (GET/PUT /api/admin/config) + Correo/SMTP y Notificaciones (GET/PUT /api/admin/smtp, notifications, send-test)
+    billing/            Módulo productivo: suscripción/pagos/comprobantes (con export CSV) + acciones Stripe (checkout, portal, cancel/reactivate, change-plan con GET /api/admin/plans, sync-plan, historial)
+    institution/        Módulo productivo: perfil de institución + snapshot (GET /me)
+    platform/           Módulo productivo: consola superadmin (GET /api/platform/*) + CRUD de instituciones y planes + exportaciones CSV
   lib/                  http.ts (_cliente fetch con Authorization Bearer), supabase.ts, utils.ts
   stores/               auth.store (sesión), ui.store (sidebar), toast.store
   types/                paginación compartida
@@ -102,14 +103,17 @@ Las páginas son `lazy(() => import(...))` en `src/app/router.tsx`. Vendors sepa
 Ver `../AGENTS.md` §"Known spec-vs-OpenAPI deltas". Las más relevantes en código:
 
 - **Reindex**: `POST /api/admin/reindex` con `documento_id?` en body (no `POST /api/admin/documents/{id}/reindex`).
-- **Métricas**: `GET /api/admin/metrics` no soporta filtros. Analytics UI los muestra con aviso "Nivel 2".
-- **Categories**: `GET /api/admin/categories` existe (paginado). Resolver `categoria_id` a `CategoryOut` en el cliente (sin CRUD aún, Nivel 2).
+- **Métricas**: `GET /api/admin/metrics` con filtros `desde/hasta/categoria_id/modelo/documento_id` + `granularidad` (`day`) + `series`; además `top_documents` (documentos más consultados) y `documents_by_category` (distribución por categoría), consumidos por Analytics.
+- **Categories**: `GET /api/admin/categories` existe (paginado), y también `POST/PUT/DELETE`. Resolver `categoria_id` a `CategoryOut` en el cliente; CRUD en backend + UI de gestión (`CategoriesDialog` en DocumentsPage).
 - **Trailing slashes**: `/api/conversations/` lleva slash; `/api/conversations/{id}` no. Respétalo.
-- **Settings**: bloques LLM/Embedding/Storage/Vector no tienen endpoint → `PendingBlock` con aviso.
+- **Settings**: `GET /api/admin/config` + `PUT /api/admin/config/{clave}` reales (`editable_desde_dashboard`); bloques editables vs solo lectura.
 - **Audit**: `AuditLogOut` no trae prompt/respuesta/usuario → drawer enlaza a Conversations via `mensaje_id`.
+- **MessageOut**: incluye `sources` (documentos recuperados, batch) y `rating`/`feedback_comment` desde `GET /api/conversations/{id}` y `.../messages` → `ContextViewer`/`FeedbackBadge`.
 - **DocumentStatus**: enum `PENDING/PROCESSING/READY/FAILED`. `INACTIVE` = `activo === false`.
-- **Voice** (`POST /api/chat/voice`): opcional MVP, no implementado.
+- **Voice** (`POST /api/chat/voice`): opcional MVP; UI implementada (grabación MediaRecorder + adjuntar archivo + reproducción de la respuesta vía `GET /api/chat/audio/{id}`). Formato de grabación (webm/mp4) pendiente de validar con el STT del backend.
 
-## Sin tests todavía
+## Tests
 
-Sin Vitest configurado. Si se añaden, actualizar `../AGENTS.md`.
+Vitest (entorno node, patrón `src/**/*.test.ts`): 13 tests sobre helpers puros —
+`lib/roles.test.ts` (permisos por `tipo_miembro`/`is_platform_admin`) y `lib/http.test.ts`
+(`isNotFound`, 404 multi-tenant). Ejecutar con `npm test`. Componentes/hooks aún sin cobertura.

@@ -124,7 +124,12 @@ GET /ready
 
 ## Métricas
 
-GET /metrics
+GET /api/admin/metrics
+
+## Actividad reciente
+
+GET /api/admin/audit (implementado 2026-09-20: `ActivityTimeline` se alimenta de
+audit para staff/platform; los estudiantes ven un EmptyState).
 
 ------------------------------------------------------------------------
 

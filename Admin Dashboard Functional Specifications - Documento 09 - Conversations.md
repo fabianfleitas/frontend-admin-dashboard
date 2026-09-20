@@ -143,8 +143,13 @@ Loading, Empty, Error y Success con componentes reutilizables.
 
 # Estado actual / deltas (Nivel 2)
 
--   FeedbackBadge.tsx y ContextViewer.tsx existen pero no están integrados
-    en ConversationDrawer (pendiente conectar fuentes y feedback por mensaje).
+-   ContextViewer y FeedbackBadge **integrados** (2026-09-20): el drawer muestra
+    el contexto recuperado del último mensaje del asistente (vía `GET
+    /api/conversations/{id}`, campo `sources` en `MessageOut`) y el feedback por
+    mensaje (`rating`/`feedback_comment`).
+-   Pendiente (backend): lectura/moderación global de feedback (`GET` de
+    feedback fuera del detalle por conversación) — hoy solo se crea y se muestra
+    por mensaje en el detalle.
 
 ------------------------------------------------------------------------
 

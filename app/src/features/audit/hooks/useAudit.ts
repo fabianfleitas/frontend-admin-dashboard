@@ -4,6 +4,7 @@ import { getAudit } from '../api/audit.service'
 export interface UseAuditParams {
   limit?: number
   offset?: number
+  enabled?: boolean
 }
 
 export function useAudit(params: UseAuditParams = {}) {
@@ -11,5 +12,6 @@ export function useAudit(params: UseAuditParams = {}) {
     queryKey: ['audit', params.limit ?? 20, params.offset ?? 0],
     queryFn: () => getAudit({ limit: params.limit, offset: params.offset }),
     placeholderData: (prev) => prev,
+    enabled: params.enabled ?? true,
   })
 }

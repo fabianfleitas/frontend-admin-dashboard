@@ -296,6 +296,13 @@ de embedding usado.
 
 Comportamiento de la respuesta según configuracion:
 
+- **Anonimización PII** (flag interno, sin cambio de contrato): cuando
+  `PII_ANONYMIZATION_ENABLED=true`, el backend anonimiza la pregunta antes de enviarla al
+  retrieval/LLM; la `response` devuelta es funcionalmente identica (misma fuente de verdad RAG).
+  El frontend no necesita cambios: el contrato de `chat/query`/`chat/voice` es el mismo. Si el
+  detector PII no esta disponible con la politica activa, la respuesta es el fallback controlado
+  ("No fue posible generar la respuesta en este momento") con `sources` vacio.
+
 - **`LLM_ENABLED=true` y contexto recuperado**: `response` es la respuesta real generada por
   OpenRouter (groundeada en el contexto recuperado, con citas de articulo/pagina). En `assistant_message`
   y `audit_logs` quedan `modelo_ia`, `tokens_input` y `tokens_output` reales. `proveedor_ia=OpenRouter`.
@@ -489,7 +496,6 @@ Ejemplo de consumo en Frontend:
 async function getAudioBlobUrl(audioInteractionId: number): Promise<string> {
   const response = await fetch(`/api/chat/audio/${audioInteractionId}`, {
       'Authorization': 'Bearer ' + tokenSupabase,
-      'Authorization': 'Bearer ' + tokenSupabase,
       // El backend resuelve tipo_miembro desde institucion_miembros; no enviar X-User-Type
     },
   });
@@ -571,7 +577,12 @@ Respuesta:
 {
   "external_auth_id": "user-123",
   "email": "usuario@institucion.edu",
+  "full_name": "Usuario Ejemplo",
   "role": "STUDENT",
+  "institucion_id": 1,
+  "tipo_miembro": "ESTUDIANTE",
+  "is_platform_admin": false,
+  "nombre_institucion": "Institución Ejemplo",
   "created_at": "2026-06-12T18:30:00.000000Z",
   "updated_at": "2026-06-12T18:30:00.000000Z"
 }
