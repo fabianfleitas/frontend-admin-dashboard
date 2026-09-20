@@ -79,16 +79,14 @@ admin → `/sin-membresia`. Un `404` también puede significar recurso de otra i
 
 Paginación estándar: `{ "items": [], "pagination": { total, limit, offset } }`.
 
-### Endpoints NO disponibles todavía
+### Endpoints disponibles hoy (actualizado 2026-08-29)
 
-- `/api/platform/*` (superadmin).
-- Billing/Stripe operativo (tablas modeladas: `planes`, `suscripciones`,
-  `suscripcion_historial`, `pagos`, `comprobantes`, `stripe_eventos`).
-- CRUD de instituciones, suscripciones, pagos/comprobantes.
-- Settings completos sobre `config_parametros`.
-- Filtros (periodo/categoría/modelo/documento) ni series temporales en
-  `GET /api/admin/metrics`.
-- CRUD de categorías (solo lectura paginada).
+Todos los grupos del contrato actual (`openapi.current.json` 2026-08-29) están implementados:
+- `/api/platform/*` — superadmin (instituciones, miembros, métricas, audit, usuarios, planes, suscripciones, pagos, comprobantes).
+- Billing/Stripe operativo (`/api/admin/subscription`, `/plan`, `/pagos`, `/comprobantes`, `/api/admin/stripe/*`, webhook).
+- Config institucional (`/api/admin/config`, `/api/admin/config/{clave}`).
+- Metrics con filtros `/api/admin/metrics` (desde/hasta/categoría/modelo/documento, granularidad `day`, series temporales — Nivel 2 implementado en Analytics UI).
+- CRUD de categorías (`POST/PUT/DELETE` `/api/admin/categories`).
 
 ## 4. Estado del front por módulo
 
@@ -104,9 +102,9 @@ Paginación estándar: `{ "items": [], "pagination": { total, limit, offset } }`
 | `audit` | `/audit` | Implementado | `GET /api/admin/audit` | Drawer enlaza a Conversations vía `mensaje_id` |
 | `users` | `/users` | Implementado (lectura) | `GET /api/admin/users` | Columnas membresía/institución defensivas; badge platform admin |
 | `settings` | `/settings` | Implementado (lectura) | `GET /ready`, `GET /api/admin/metrics` | Bloques LLM/Embedding/Storage/Vector como pendientes (`config_parametros`) |
-| `billing` | `/billing` | **Placeholder** (guard `admin`) | — | Suscripción/pagos/comprobantes — espera contratos Stripe |
-| `institution` | `/institution` | **Placeholder** (guard `admin`) | — | Institución/configuración institucional |
-| `platform` | `/platform` | **Placeholder** (guard `platform`) | — | Consola superadmin — espera `/api/platform/*` |
+| `billing` | `/billing` | **Implementado** | `/api/admin/plan`, `/api/admin/subscription`, `/api/admin/pagos`, `/api/admin/comprobantes`, `/api/admin/stripe/*` | Checkout/portal/cancel/reactivate/sync-plan activos; change-plan pendiente endpoint de planes |
+| `institution` | `/institution` | **Implementado (perfil + snapshot)** | `GET /me` | Configuración avanzada pendiente (Nivel 2) |
+| `platform` | `/platform` | **Implementado** | `/api/platform/*` | Consola superadmin completa (instituciones, miembros, métricas, audit, planes, suscripciones, pagos, comprobantes) |
 
 ### Guards y navegación
 
@@ -156,13 +154,10 @@ Paginación estándar: `{ "items": [], "pagination": { total, limit, offset } }`
 
 | Archivo | Rol |
 |---|---|
-| `openapi.current.json` | Contrato OpenAPI 3.1 exportado del backend (2026-08-25). Fuente de verdad. |
-| `ENDPOINTS_Y_MODELOS_ACTUALES.md` | Auth real, endpoints, modelos y deltas clave. |
-| `CHECKLIST_ADMIN_FRONT.md` | Checklist de ejecución del front (Fases 1–5 + validaciones QA + bloqueadores). **Ejecutado.** |
-| `PLAN_ARCHIVO_POR_ARCHIVO.md` | Plan de cambios archivo por archivo. **Ejecutado.** |
-| `RECOMENDACIONES_BACKEND_PARA_ADMIN_FRONT.md` | Recomendaciones hacia el backend. |
-| `PLAN_SIGUIENTE_CICLO_BACKEND.md` | Backlog priorizado del siguiente ciclo backend con criterios de validación desde el front. |
-| `README.md` | Índice del paquete y orden sugerido de lectura. |
+| `openapi.current.json` | Contrato OpenAPI 3.1 (2026-08-29, regenerado tras cierre handoff). Fuente de verdad sobre auth/schemas. |
+| `FRONTEND_API_INTEGRATION.md` | Contrato de integración frontend (auth Bearer, paginación, chat/voz, documentos, admin, billing, platform). |
+| `TODO_BACKEND_CIERRE_MULTIINSTITUCION.md` | Backlog y cierre integral (billing, platform, institution). |
+| `bruno/` | Colección Bruno para pruebas manuales de la API. |
 
 Deltas spec-vs-backend vigentes (documentados en `AGENTS.md`): reindex global
 (`POST /api/admin/reindex`), métricas sin filtros, trailing slashes de

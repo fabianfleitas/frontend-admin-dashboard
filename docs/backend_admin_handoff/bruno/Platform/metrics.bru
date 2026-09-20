@@ -1,0 +1,15 @@
+meta {
+  name: metrics
+  type: http
+  seq: 99
+}
+
+get {
+  url: {{baseUrl}}/api/platform/metrics
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

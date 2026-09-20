@@ -1,0 +1,16 @@
+meta {
+  name: deactivate document
+  type: http
+  seq: 20
+}
+
+delete {
+  url: {{baseUrl}}/api/admin/documents/{{documentoId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+  
+}

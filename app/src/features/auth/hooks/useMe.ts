@@ -2,6 +2,12 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getMe } from '../api/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
+import {
+  hasInstitutionMembership,
+  isInstitutionAdmin,
+  isPlatformAdmin,
+  isStaffMember,
+} from '@/lib/roles'
 import type { MemberType, UserRole } from '@/features/users/types'
 
 export function useMe() {
@@ -23,15 +29,18 @@ export function useMe() {
     if (query.data) setProfile(query.data)
   }, [query.data, setProfile])
 
-  const isLoading = isAuthenticated && !query.data && !query.isError
   const effective = profile ?? query.data
+  const isLoading = isAuthenticated && !effective && !query.isError
 
   return {
     user,
     profile,
     role: effective?.role as UserRole | undefined,
     memberType: effective?.tipo_miembro as MemberType | null | undefined,
-    isPlatformAdmin: effective?.is_platform_admin ?? false,
+    isPlatformAdmin: isPlatformAdmin(effective),
+    hasMembership: hasInstitutionMembership(effective),
+    isAdmin: isInstitutionAdmin(effective),
+    isStaff: isStaffMember(effective),
     institucionId: effective?.institucion_id ?? null,
     fullName: effective?.full_name ?? null,
     institucionNombre: effective?.nombre_institucion ?? null,

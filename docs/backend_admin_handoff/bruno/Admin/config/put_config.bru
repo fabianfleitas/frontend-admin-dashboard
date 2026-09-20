@@ -1,0 +1,19 @@
+meta {
+  name: config_put
+  type: http
+  seq: 30
+}
+
+put {
+  url: {{baseUrl}}/api/admin/config/{{key}}
+  body: {
+    "clave": "{{key}}",
+    "valor": "{{value}}",
+    "tipo": "string"
+  }
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

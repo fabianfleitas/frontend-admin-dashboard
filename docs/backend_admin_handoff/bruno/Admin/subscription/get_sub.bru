@@ -1,0 +1,15 @@
+meta {
+  name: subscription_get
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{baseUrl}}/api/admin/subscription
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

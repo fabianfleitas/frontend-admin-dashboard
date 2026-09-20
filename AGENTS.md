@@ -19,7 +19,7 @@ When a feature question arises, read the matching numbered doc first; do not gue
 
 ## Other assets
 
-- `docs/backend_admin_handoff/openapi.current.json` — OpenAPI 3.1 spec of the external FastAPI backend, regenerated 2026-08-26. This is the **source of truth** for real endpoint shapes/auth (currently `Authorization: Bearer <jwt>`); trust it over prose when they conflict. Also see `docs/backend_admin_handoff/` for `ENDPOINTS_Y_MODELOS_ACTUALES.md`, `CHECKLIST_ADMIN_FRONT.md` and `PLAN_ARCHIVO_POR_ARCHIVO.md`.
+- `docs/backend_admin_handoff/openapi.current.json` — OpenAPI 3.1 spec of the external FastAPI backend, regenerated 2026-08-29. This is the **source of truth** for real endpoint shapes/auth (currently `Authorization: Bearer <jwt>`); trust it over prose when they conflict. Also see `docs/backend_admin_handoff/` for `FRONTEND_API_INTEGRATION.md`, `TODO_BACKEND_CIERRE_MULTIINSTITUCION.md` and `bruno/`.
 - The old `documentacion/openapi.json` (delegated `X-*` headers) is obsolete and has been removed from the repo.
 
 ## App layout
@@ -36,7 +36,7 @@ app/                      # SPA root (Vite project)
   .env.example            # VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 ```
 
-Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`. `landing` es público (fuera de `ProtectedRoute`). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura plan/subscription/pagos/comprobantes), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en `openapi.current.json` (2026-08-26).
+Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`. `landing` es público (fuera de `ProtectedRoute`). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura + acciones Stripe: checkout/portal, cancel/reactivate, sync-plan, historial; change-plan pendiente endpoint de planes), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en `openapi.current.json` (2026-08-26).
 
 ## Developer commands
 
@@ -75,13 +75,13 @@ Guards/UI should use the helpers in `app/src/lib/roles.ts` (`hasInstitutionMembe
 
 1. **Reindex**: real route is `POST /api/admin/reindex` with optional `documento_id` in body — NOT `POST /api/admin/documents/{id}/reindex` (Doc 07).
 2. **Metrics**: real route `GET /api/admin/metrics` — NOT `/metrics`. Supports `desde/hasta/categoria_id/modelo/documento_id` filters + `granularidad` (`day`) + `series` temporal (Nivel 2 filters now implemented in Analytics UI).
-3. **Categories**: `GET /api/admin/categories` **exists** now (paginated). Documents carry `categoria_id`; resolve names to `CategoryOut` client-side. (No CRUD endpoint for categories yet — Nivel 2.)
+3. **Categories**: `GET /api/admin/categories` exists (paginated). `POST /api/admin/categories`, `PUT /api/admin/categories/{categoria_id}`, `DELETE /api/admin/categories/{categoria_id}` also live (Nivel 2 CRUD available; no UI yet). Documents carry `categoria_id`; resolve names to `CategoryOut` client-side.
 4. **DocumentStatus** enum is `PENDING | PROCESSING | READY | FAILED`. Doc 07's `INACTIVE` state = `DocumentOut.activo === false`, separate from version status.
 5. **Trailing slashes** vary per path: `/api/conversations/` (with slash) vs `/api/conversations/{id}` (without). Respect exactly.
 6. **Settings (Doc 12)**: `GET /api/admin/config` + `PUT /api/admin/config/{clave}` real (`ConfigParamOut.editable_desde_dashboard`). Blocks render editables vs solo lectura; available aggregate data shown; no more "pendiente" notice.
 7. **AuditLogOut** lacks user/prompt/response/latency fields. Drawer links to Conversations via `mensaje_id` for full context.
 8. **Voice chat** (`POST /api/chat/voice`) is optional MVP per Doc 08.
-9. **MessageRole / Contract update 2026-08-26**: `rol_mensaje` uses `USER | ASSISTANT` (uppercase), not `user/assistant`. `UserOut` includes `nombre_institucion`. `POST /api/platform/institutions/{id}/members` requires body `{payload: MemberIn, auth: AuthContext}`.
+9. **MessageRole / Contract update 2026-08-26**: `rol_mensaje` uses `USER | ASSISTANT` (uppercase), not `user/assistant`. `UserOut` includes `nombre_institucion`. `POST /api/platform/institutions/{id}/members` recibe `MemberIn` (`{external_auth_id, tipo_miembro}`) directamente (sin `payload` ni `auth` en el body; el backend resuelve `auth` vía JWT Bearer).
 10. **Billing / Platform contracts**: `GET /api/admin/plan/subscription/pagos/comprobantes`, `GET /api/platform/institutions` + members + users/metrics/audit/plans/subscriptions/pagos/comprobantes now live (openapi 2026-08-26).
 
 ## Conventions when editing docs

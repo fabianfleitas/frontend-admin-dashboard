@@ -1,0 +1,15 @@
+meta {
+  name: plan
+  type: http
+  seq: 99
+}
+
+get {
+  url: {{baseUrl}}/api/admin/plan
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

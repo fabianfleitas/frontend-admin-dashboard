@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Backend Agent System",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

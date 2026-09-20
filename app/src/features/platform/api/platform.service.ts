@@ -1,5 +1,5 @@
 import { http } from '@/lib/http'
-import type { InstitutionOut, MemberOut, MemberIn, AuthContext } from '../types'
+import type { InstitutionOut, MemberOut, MemberIn } from '../types'
 import type { AuditLogOut } from '@/features/audit/types'
 import type { PlanOut, SubscriptionOut, PagoOut, ComprobanteOut } from '@/features/billing/types'
 import type { MetricsOut } from '@/features/dashboard/types'
@@ -18,8 +18,8 @@ export function listMembers(id: number) {
   return http.get<MemberOut[]>(`/api/platform/institutions/${id}/members`)
 }
 
-export function addMember(id: number, payload: MemberIn, auth: AuthContext) {
-  return http.post<MemberOut>(`/api/platform/institutions/${id}/members`, { body: { payload, auth } })
+export function addMember(id: number, payload: MemberIn) {
+  return http.post<MemberOut>(`/api/platform/institutions/${id}/members`, { body: payload })
 }
 
 export function removeMember(institutionId: number, memberId: number) {

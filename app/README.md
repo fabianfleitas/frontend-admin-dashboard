@@ -69,7 +69,7 @@ src/
     audit/              Trazabilidad (GET /api/admin/audit)
     users/              Listado read-only (GET /api/admin/users)
     settings/           Vista solo-lectura (bloques LLM/Embedding/Storage/Vector pendientes en backend)
-    billing/            Placeholder de rutas (Fase 5): suscripción/pagos/comprobantes — sin endpoints aún
+    billing/            Módulo productivo (Fase 5): suscripción/pagos/comprobantes — lectura + acciones Stripe (checkout, portal, cancel/reactivate, sync-plan, historial)
     institution/        Placeholder de rutas (Fase 5): institución/configuración — sin endpoints aún
     platform/           Placeholder de rutas (Fase 5): superadmin — sin endpoints aún
   lib/                  http.ts (_cliente fetch con Authorization Bearer), supabase.ts, utils.ts

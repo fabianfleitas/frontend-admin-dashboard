@@ -1,0 +1,16 @@
+meta {
+  name: hide conversation
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/conversations/{{conversationId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+  
+}

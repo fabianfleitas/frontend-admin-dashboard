@@ -1,0 +1,17 @@
+meta {
+  name: stripe_portal_post
+  type: http
+  seq: 99
+}
+
+post {
+  url: {{baseUrl}}/api/admin/stripe/portal-session
+  body: {
+    "return_url": "https://example.com/return"
+  }
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

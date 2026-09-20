@@ -9,8 +9,6 @@ import { usePlatformPlans } from '../hooks/usePlatformPlans'
 import { usePlatformSubscriptions } from '../hooks/usePlatformSubscriptions'
 import { usePlatformPagos } from '../hooks/usePlatformPagos'
 import { usePlatformComprobantes } from '../hooks/usePlatformComprobantes'
-import { buildAuthContext } from '../lib/buildAuthContext'
-import { useMe } from '@/features/auth/hooks/useMe'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { SectionTitle } from '@/components/common/SectionTitle'
@@ -35,7 +33,6 @@ export function PlatformPage() {
   const [comprobantesOffset, setComprobantesOffset] = useState(0)
   const [subsOffset, setSubsOffset] = useState(0)
 
-  const me = useMe()
   const insts = usePlatformInstitutions()
   const members = useInstitutionMembers(selectedId)
   const add = useAddMember()
@@ -46,8 +43,6 @@ export function PlatformPage() {
   const subsQ = usePlatformSubscriptions({ limit: 20, offset: subsOffset })
   const pagosQ = usePlatformPagos({ limit: 20, offset: pagosOffset })
   const comprobantesQ = usePlatformComprobantes({ limit: 20, offset: comprobantesOffset })
-
-  const authCtx = me.profile ? buildAuthContext(me.profile) : null
 
   const metricsQ = usePlatformMetrics()
   const tabs = [
@@ -104,7 +99,7 @@ export function PlatformPage() {
                 <select className="h-8 rounded-md border px-2 text-xs" value={newType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNewType(e.target.value)}>
                   <option value="ESTUDIANTE">Estudiante</option><option value="ADMIN">Admin</option><option value="SECRETARIA">Secretaria</option>
                 </select>
-                <Button size="sm" className="h-8" onClick={() => { if (newExt && authCtx) add.mutate({ institutionId: selectedId, payload: { external_auth_id: newExt, tipo_miembro: newType }, auth: authCtx }); setNewExt(''); }}><Plus size={14} /></Button>
+                <Button size="sm" className="h-8" onClick={() => { if (newExt) add.mutate({ institutionId: selectedId, payload: { external_auth_id: newExt, tipo_miembro: newType } }); setNewExt(''); }}><Plus size={14} /></Button>
               </div>
               <div className="overflow-auto">
                 <table className="w-full text-sm"><thead><tr className="border-b"><th className="text-left py-2 px-2">ID</th><th className="text-left py-2 px-2">Usuario</th><th className="text-left py-2 px-2">Tipo</th><th className="py-2 px-2"></th></tr></thead>

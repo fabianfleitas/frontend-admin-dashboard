@@ -1,6 +1,6 @@
 export interface InstitutionOut {
   id: number
-  codigo: string
+  codigo: string | null
   nombre: string
   nombre_comercial: string | null
   ciudad: string | null
@@ -19,9 +19,9 @@ export interface MemberOut {
   external_auth_id: string
   tipo_miembro: string
   activo: boolean
-  fecha_ingreso: string
-  email: string
-  full_name: string
+  fecha_ingreso: string | null
+  email: string | null
+  full_name: string | null
 }
 
 export interface MemberIn {
@@ -29,12 +29,4 @@ export interface MemberIn {
   tipo_miembro: string
 }
 
-export interface AuthContext {
-  external_auth_id: string
-  email: string
-  full_name: string | null
-  institucion_id: number | null
-  tipo_miembro: string | null
-  is_platform_admin: boolean
-  auth_provider: string | null
-}
+

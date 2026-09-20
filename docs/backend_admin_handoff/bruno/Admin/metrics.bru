@@ -1,0 +1,16 @@
+meta {
+  name: metrics
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/admin/metrics
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+  
+}

@@ -1,0 +1,20 @@
+meta {
+  name: upload version
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseUrl}}/api/admin/documents/{{documentoId}}/versions
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+  
+}
+
+body:multipartForm {
+  file: @file(./documento.pdf)
+}

@@ -1,0 +1,22 @@
+meta {
+  name: list conversations
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/conversations
+  body: none
+  auth: inherit
+}
+
+params:query {
+  include_hidden: false
+  limit: 20
+  offset: 0
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+  
+}

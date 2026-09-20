@@ -1,0 +1,17 @@
+meta {
+  name: stripe_cancel_subscription_post
+  type: http
+  seq: 99
+}
+
+post {
+  url: {{baseUrl}}/api/admin/stripe/cancel-subscription
+  body: {
+    "cancel_at_period_end": true
+  }
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}

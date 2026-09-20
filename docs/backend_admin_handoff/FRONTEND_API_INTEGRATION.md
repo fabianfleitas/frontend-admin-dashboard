@@ -1002,6 +1002,85 @@ GET /api/platform/audit
 
 Contratos: `InstitutionOut`, `MemberOut`, `MemberIn`, `UserOut`, `MetricsOut`, `AuditLogOut` con paginación.
 
+## Billing lectura (institucional)
+```http
+GET /api/admin/subscription
+GET /api/admin/plan
+GET /api/admin/pagos
+GET /api/admin/comprobantes
+```
+Respuesta: `SubscriptionOut` (plan anidado `PlanOut`), `PlanOut`, `PaginatedResponse[PagoOut/ComprobanteOut]`.
+
+## Subscription / Billing lectura
+- `GET /api/admin/subscription/history` (nuevo)
+
+## Stripe / Billing acciones (admin institucional)
+- `POST /api/admin/stripe/checkout` → `CheckoutSessionOut`
+- `GET /api/admin/stripe/subscription` → `StripeSubscriptionOut`
+- `POST /api/admin/stripe/portal-session` → `StripePortalSessionOut`
+- `POST /api/admin/stripe/change-plan` → `SubscriptionChangePlanOut`
+- `POST /api/admin/stripe/sync-plan` → `StripePlanSyncOut`
+- `POST /api/billing/stripe/webhook` → webhook Stripe (firma, sin auth; requiere `STRIPE_WEBHOOK_SECRET`)
+
+### Stripe / Billing — contratos y flujos (admin institucional)
+
+**Autenticación:** `Authorization: Bearer <jwt>` (admin institucional con `tipo_miembro` ADMIN/SECRETARIA; `is_platform_admin` no accede a `/api/admin/stripe/*`).
+
+**Checkout Session (`POST /api/admin/stripe/checkout`)**
+- Request: `{plan_id: int, success_url?: string, cancel_url?: string}` (`CheckoutSessionIn`)
+- Response: `{url?: string, session_id?: string}` (`CheckoutSessionOut`)
+- Flujo: cliente recibe `url`; redirige a Stripe Checkout (test/live); tras completar, Stripe envía `checkout.session.completed`; backend persiste `pagos` (PENDING) y activa `suscripciones` (ACTIVE) vía webhook; el frontend consulta `GET /api/admin/stripe/subscription` para confirmar.
+- Nota: `plan_id` debe tener `stripe_price_id` sincronizado; si no, `400` / `404`.
+
+**Suscripción Stripe (`GET /api/admin/stripe/subscription`)**
+- Response: `StripeSubscriptionOut` (`subscription_id`, `customer_id`, `status`, `current_period_end`, `current_period_start`, `latest_invoice_payment_intent_id`, `latest_invoice_status`, `cancel_at_period_end`)
+- Estado: retorna el valor crudo de Stripe (`incomplete/active/past_due/...`); el backend persiste `suscripciones.estado` con estados internos (`TRIAL/ACTIVE/PENDING_PAYMENT/SUSPENDED/CANCELLED/EXPIRED`).
+
+**Crear suscripción (`POST /api/admin/stripe/create-subscription`)**
+- Request: `{plan_id: int}` (`SubscriptionCreateIn`)
+- Response: `{subscription_id, customer_id, status, latest_invoice_payment_intent_id, client_secret}` (`SubscriptionCreateOut`)
+- Nota: `client_secret` del `payment_intent` permite confirmar pago en frontend (Stripe Elements / PaymentIntent). El status inicial es `incomplete`; tras pagar se actualiza a `active`.
+
+**Cancelar (`POST /api/admin/stripe/cancel-subscription`)**
+- Request: `{cancel_at_period_end: bool = true}` (`SubscriptionCancelIn`)
+- Response: `SubscriptionActionOut` (con `subscription_id`, `status`, `cancel_at_period_end`, `canceled_at`)
+
+**Reactivar (`POST /api/admin/stripe/reactivate-subscription`)**
+- Response: `SubscriptionActionOut`
+
+**Cambiar plan (`POST /api/admin/stripe/change-plan`)**
+- Request: `{plan_id: int}` (`SubscriptionChangePlanIn`)
+- Response: `SubscriptionChangePlanOut` (`subscription_id`, `customer_id`, `status`, `latest_invoice_payment_intent_id`, `client_secret`)
+- Usa `proration_behavior=create_prorations` en Stripe.
+
+**Portal (`POST /api/admin/stripe/portal-session`)**
+- Request: `{return_url: str}` (`StripePortalSessionIn`)
+- Response: `{url, id, customer_id}` (`StripePortalSessionOut`)
+
+**Sync Plan (`POST /api/admin/stripe/sync-plan`)**
+- Request: `{plan_id: int}` (`StripePlanSyncIn`)
+- Response: `{plan_id, stripe_product_id, stripe_price_id, stripe_product_created, stripe_price_created}` (`StripePlanSyncOut`)
+- Sincroniza el `plan` de la DB con Stripe (crea/modifica Product + Price). Requiere `stripe_price_id` vacío o existente.
+
+**Billing lectura**
+- `GET /api/admin/subscription` → `SubscriptionOut` (plan anidado `PlanOut`, `estado`, fechas, refs Stripe)
+- `GET /api/admin/subscription/history` → `SubscriptionHistoryOut` (historial de cambios de plan/estado)
+- `GET /api/admin/plan` → `PlanOut`
+- `GET /api/admin/pagos` → paginado `PagoOut`
+- `GET /api/admin/comprobantes` → paginado `ComprobanteOut`
+
+**Webhook (`POST /api/billing/stripe/webhook`)**
+- Requiere header `Stripe-Signature`; valida con `STRIPE_WEBHOOK_SECRET`.
+- Eventos manejados: `checkout.session.completed`, `customer.subscription.created/updated/deleted`, `invoice.payment_succeeded/failed`.
+- Configuración: `stripe listen --forward-to localhost:8000/api/billing/stripe/webhook` (local dev) o endpoint HTTPS público (producción); `whsec_...` debe ir en `.env` como `STRIPE_WEBHOOK_SECRET`.
+
+**Checklist de frontend (billing)**
+- Enviar `Authorization: Bearer <jwt>` en todas las llamadas.
+- Para checkout: llamar `POST /api/admin/stripe/checkout`, obtener `url`, redirigir (no abrir como iframe; debe ser navegación completa a Stripe); luego consultar `GET /api/admin/stripe/subscription` para estado.
+- Si el usuario usa `create-subscription`: manejar `client_secret` para confirmar pago con Stripe Elements/PaymentIntent.
+- Para cambiar/deactivar: usar `change-plan` / `cancel-subscription`; para portal: `portal-session`.
+- No confiar en `X-*` headers delegados; el backend resuelve `institucion_id` y `tipo_miembro` desde el JWT de Supabase.
+
 ## Health y readiness
 
 ```http

@@ -2,7 +2,6 @@ import { type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useSession } from '@/features/auth/hooks/useSession'
 import { useMe } from '@/features/auth/hooks/useMe'
-import { useAuthCapabilities } from '@/features/auth/hooks/useAuthCapabilities'
 import { toast } from '@/stores/toast.store'
 
 export type RouteGuard = 'authenticated' | 'member' | 'staff' | 'admin' | 'platform'
@@ -26,9 +25,10 @@ function evaluateGuard(
 
 export function ProtectedRoute({ children, guard = 'authenticated' }: ProtectedRouteProps) {
   const { isAuthenticated, sessionLoaded } = useSession()
-  const { isLoading } = useMe()
-  const capabilities = useAuthCapabilities()
+  const { isLoading, hasMembership, isAdmin, isStaff, isPlatformAdmin } = useMe()
   const location = useLocation()
+
+  const capabilities = { hasMembership, isAdmin, isStaff, isPlatformAdmin }
 
   if (!sessionLoaded) {
     return (
@@ -60,7 +60,7 @@ export function ProtectedRoute({ children, guard = 'authenticated' }: ProtectedR
 
   // Un usuario autenticado sin membresía institucional activa ni privilegios de
   // plataforma no puede acceder a módulos administrativos.
-  if (!capabilities.hasMembership && !capabilities.isPlatformAdmin) {
+  if (!hasMembership && !isPlatformAdmin) {
     return <Navigate to="/sin-membresia" replace state={{ from: location.pathname }} />
   }
 

@@ -1,0 +1,14 @@
+meta {
+  name: stripe_reactivate_subscription_post
+  type: http
+  seq: 99
+}
+
+post {
+  url: {{baseUrl}}/api/admin/stripe/reactivate-subscription
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{jwt}}
+}
