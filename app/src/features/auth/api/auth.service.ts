@@ -26,3 +26,7 @@ export async function getCurrentUser(): Promise<User | null> {
 export function getMe(): Promise<UserOut> {
   return http.get<UserOut>('/me')
 }
+
+export function updateMe(body: { full_name?: string | null }): Promise<UserOut> {
+  return http.put<UserOut>('/me', { body })
+}

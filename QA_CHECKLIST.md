@@ -33,8 +33,10 @@ colección `bruno/` del backend.
 - [ ] Documentos cargan, filtran por categoría/estado y muestran versiones.
 - [ ] Subir documento (PDF) → PROCESSING → READY; reindexar.
 - [ ] Subir **nueva versión** (también valida PDF).
+- [ ] **Descargar PDF**: drawer de Documentos → "Descargar PDF" descarga el binario de la versión activa.
 - [ ] **Seguridad uploads**: subir un archivo `.pdf` **sin magic-bytes** (`%PDF`) → rechazado (400); MIME no-PDF → 400; archivo > 50 MB → 413.
 - [ ] CRUD de categorías: alta/edición/desactivación desde "Gestionar categorías"; la categoría aparece en el drawer del documento.
+- [ ] **Precedencia categorías**: admin institucional ve categorías globales + institucionales fusionadas; si nombres coinciden (case-insensitive), gana la institucional; platform admin gestiona solo globales.
 - [ ] Deep-linking: `/documents/:id` abre el detalle; IDs inválidos redirigen al listado.
 
 ## 4. Playground (chat + voz)
@@ -49,7 +51,8 @@ colección `bruno/` del backend.
 - [ ] Listado + ocultar (soft-delete) + filtro "incluir ocultas".
 - [ ] Deep-linking `/conversations/:id` abre el detalle.
 - [ ] Drawer: `ContextViewer` muestra documentos recuperados de la última respuesta; `FeedbackBadge` refleja el `rating` por mensaje.
-- [ ] `GET /api/admin/feedback` lista feedback con filtros (`conversacion_id`, `rating`).
+- [ ] **Moderación de feedback (`/feedback`)**: listado paginado con filtro por valoración; columnas
+  rating, mensaje del asistente, comentario, enlace a la conversación y fecha. `GET /api/admin/feedback` con filtros (`rating`, `conversacion_id`).
 
 ## 6. Analytics
 
@@ -77,6 +80,7 @@ colección `bruno/` del backend.
 ## 9. Settings
 
 - [ ] Config institucional legible; parámetros `editable_desde_dashboard` editables; globales solo lectura.
+- [ ] **Edición de perfil (`/institution`)**: botón "Editar perfil" guarda `full_name` vía `PUT /me`; tras guardar, el header y `GET /me` reflejan el nuevo nombre.
 - [ ] **Correo / SMTP (UI)**: completar el form (servidor/puerto/cifrado/usuario/contraseña/remitente) y guardar; `GET` devuelve la config guardada.
 - [ ] **Enviar prueba**: botón "Enviar prueba" → notificación `SENT` (o `FAILED` con error si SMTP no responde).
 
@@ -112,4 +116,4 @@ colección `bruno/` del backend.
 
 - Los flujos de IA (LLM/STT/TTS) dependen de `LLM_ENABLED`, `STT_ENABLED`, `TTS_ENABLED`
   en el backend; con flags `false` las respuestas son mock (esperado).
-- Cualquier discrepancia: actualizar `ESTADO_ACTUAL.md` y el spec del módulo correspondiente.
+- Cualquier discrepancia: reportarla en el repo backend (`backend-agent-system`) o en el repo de diagramas según corresponda.

@@ -2,24 +2,14 @@
 
 ## Repo type
 
-Hybrid repository: contains **spec docs** (Spanish Markdown at the root) **and the Admin Dashboard SPA** under `app/` (React 19 + Vite + TypeScript + Tailwind + TanStack Query + Zustand + Supabase Auth). The external FastAPI backend (described in `docs/backend_admin_handoff/openapi.current.json` as `backend-agent-system`) lives in another repo — do not assume backend code here, only the API client.
+The **Admin Dashboard SPA** under `app/` (React 19 + Vite + TypeScript + Tailwind + TanStack Query + Zustand + Supabase Auth). The external FastAPI backend (repo `backend-agent-system`, source of truth: `openapi.current.json`) lives in another repo — do not assume backend code here, only the API client.
 
 ## Source of truth
 
-All specs are written in **Spanish** and live as numbered Markdown files at the repo root. The numbering encodes the doc series:
-
-- `Admin Dashboard Blueprint v1.0 - Documento 01..05.md` — product/architecture blueprint. NOTE: `Documento 01` and `Documento 04` are not present in the repo (pending regeneration); `Documento 05` was removed; only 02 and 03 exist.
-- `Admin Dashboard Functional Specifications - Documento 06..14.md` — per-feature functional specs:
-  - 06 Dashboard · 07 Knowledge Base · 08 AI Agent Playground · 09 Conversations · 10 Analytics · 11 Audit · 12 Users & Settings · 13 Design System · 14 Architecture & Implementation Guide
-- `Admin Dashboard - Design Brief.md` — visual/UX brief (colors, type, tech stack, navigation tree)
-
-When a feature question arises, read the matching numbered doc first; do not guess from filenames alone.
-
-`Documento 14` defines the recommended implementation order (Bootstrap → Layout → Auth → Dashboard → Knowledge Base → AI Agent → Conversations → Analytics → Audit → Users → Settings) and the architecture principles (feature-first, TanStack Query for server state, Zustand for UI state, REST-only integration).
+The API contract lives in the backend repo (`backend-agent-system/openapi.current.json`, OpenAPI 3.1, regenerated from the FastAPI app). It is the **source of truth** for real endpoint shapes/auth (currently `Authorization: Bearer <jwt>`); trust it over prose when they conflict. The backend repo also holds `FRONTEND_API_INTEGRATION.md` (contract details) and the `bruno/` collection.
 
 ## Other assets
 
-- `docs/backend_admin_handoff/openapi.current.json` — OpenAPI 3.1 spec of the external FastAPI backend, regenerated 2026-08-29. This is the **source of truth** for real endpoint shapes/auth (currently `Authorization: Bearer <jwt>`); trust it over prose when they conflict. Also see `docs/backend_admin_handoff/` for `FRONTEND_API_INTEGRATION.md`, `TODO_BACKEND_CIERRE_MULTIINSTITUCION.md` and `bruno/`.
 - The old `documentacion/openapi.json` (delegated `X-*` headers) is obsolete and has been removed from the repo.
 
 ## App layout
@@ -36,7 +26,7 @@ app/                      # SPA root (Vite project)
   .env.example            # VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 ```
 
-Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`. `landing` es público (fuera de `ProtectedRoute`). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura + acciones Stripe: checkout/portal, cancel/reactivate, change-plan con `GET /api/admin/plans`, sync-plan, historial), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en `openapi.current.json` (2026-08-29).
+Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`. `landing` es público (fuera de `ProtectedRoute`). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura + acciones Stripe: checkout/portal, cancel/reactivate, change-plan con `GET /api/admin/plans`, sync-plan, historial), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en el repo backend (`backend-agent-system/openapi.current.json`).
 
 ## Developer commands
 
@@ -73,22 +63,21 @@ Guards/UI should use the helpers in `app/src/lib/roles.ts` (`hasInstitutionMembe
 
 ## Known spec-vs-OpenAPI deltas (do not re-discover)
 
-1. **Reindex**: real route is `POST /api/admin/reindex` with optional `documento_id` in body — NOT `POST /api/admin/documents/{id}/reindex` (Doc 07).
+1. **Reindex**: real route is `POST /api/admin/reindex` with optional `documento_id` in body — NOT `POST /api/admin/documents/{id}/reindex`.
 2. **Metrics**: real route `GET /api/admin/metrics` — NOT `/metrics`. Supports `desde/hasta/categoria_id/modelo/documento_id` filters + `granularidad` (`day`) + `series` temporal (Nivel 2 filters now implemented in Analytics UI). Also returns `top_documents` (documentos más consultados, dedupe por mensaje) y `documents_by_category` (distribución por categoría) — consumidos por Analytics.
 3. **Categories**: `GET /api/admin/categories` exists (paginated). `POST /api/admin/categories`, `PUT /api/admin/categories/{categoria_id}`, `DELETE /api/admin/categories/{categoria_id}` also live (Nivel 2 CRUD with UI: `CategoriesDialog` from DocumentsPage). Documents carry `categoria_id`; resolve names to `CategoryOut` client-side.
-4. **DocumentStatus** enum is `PENDING | PROCESSING | READY | FAILED`. Doc 07's `INACTIVE` state = `DocumentOut.activo === false`, separate from version status.
+4. **DocumentStatus** enum is `PENDING | PROCESSING | READY | FAILED`. The spec's `INACTIVE` state = `DocumentOut.activo === false`, separate from version status.
 5. **Trailing slashes** vary per path: `/api/conversations/` (with slash) vs `/api/conversations/{id}` (without). Respect exactly.
-6. **Settings (Doc 12)**: `GET /api/admin/config` + `PUT /api/admin/config/{clave}` real (`ConfigParamOut.editable_desde_dashboard`). Blocks render editables vs solo lectura; available aggregate data shown; no more "pendiente" notice.
+6. **Settings**: `GET /api/admin/config` + `PUT /api/admin/config/{clave}` real (`ConfigParamOut.editable_desde_dashboard`). Blocks render editables vs solo lectura; available aggregate data shown; no more "pendiente" notice.
 7. **AuditLogOut** lacks user/prompt/response/latency fields. Drawer links to Conversations via `mensaje_id` for full context.
-8. **Voice chat** (`POST /api/chat/voice`) is optional MVP per Doc 08. UI implementada (2026-09-20): grabación con MediaRecorder u adjuntar archivo de audio, placeholder optimista `[Audio]` en el chat y reproducción de la respuesta vía `GET /api/chat/audio/{audio_interaction_id}`. El formato de grabación del navegador (webm/mp4) está pendiente de validar con el STT del backend.
+8. **Voice chat** (`POST /api/chat/voice`) is optional MVP per spec. UI implementada (2026-09-20): grabación con MediaRecorder u adjuntar archivo de audio, placeholder optimista `[Audio]` en el chat y reproducción de la respuesta vía `GET /api/chat/audio/{audio_interaction_id}`. El formato de grabación del navegador (webm/mp4) está pendiente de validar con el STT del backend.
 9. **MessageRole / Contract update 2026-08-26**: `rol_mensaje` uses `USER | ASSISTANT` (uppercase), not `user/assistant`. `UserOut` includes `nombre_institucion`. `POST /api/platform/institutions/{id}/members` recibe `MemberIn` (`{external_auth_id, tipo_miembro}`) directamente (sin `payload` ni `auth` en el body; el backend resuelve `auth` vía JWT Bearer).
 10. **Billing / Platform contracts**: `GET /api/admin/plan/subscription/pagos/comprobantes`, `GET /api/platform/institutions` + members + users/metrics/audit/plans/subscriptions/pagos/comprobantes now live (openapi 2026-08-26).
 
 ## Conventions when editing docs
 
 - Keep content in Spanish to match existing files.
-- Preserve the `Admin Dashboard ... - Documento NN.md` naming pattern; the number is how docs are cross-referenced.
-- Specs are the brief's "single source of truth" for the thesis project — favor amending them over creating new ad-hoc docs.
+- The API contract lives in the backend repo (`backend-agent-system/openapi.current.json`); favor amending that over creating new ad-hoc docs in this repo.
 
 ## Code conventions (app/)
 

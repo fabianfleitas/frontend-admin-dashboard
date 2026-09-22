@@ -1,16 +1,13 @@
 # Admin Dashboard SPA
 
 Panel de administración del sistema de atención inteligente basado en arquitectura RAG.
-El frontend consume el backend FastAPI (`backend-agent-system`) documentado en
-`../docs/backend_admin_handoff/openapi.current.json` y autentica con Supabase Auth (Google).
-
-Las especificaciones funcionales viven como Markdown numerado en la raíz del repo
-(ver `../AGENTS.md` para el mapeo Documento → Módulo).
+El frontend consume el backend FastAPI (`backend-agent-system`), cuyo contrato vive en
+`openapi.current.json` de ese repo, y autentica con Supabase Auth (Google).
 
 ## Stack
 
 - React 19 + Vite 8 + TypeScript 6
-- Tailwind CSS 4 (tokens del Design Brief)
+- Tailwind CSS 4
 - React Router 7 (rutas protegidas)
 - TanStack Query 5 (estado servidor)
 - Zustand (estado UI: sidebar, sesión, toasts)
@@ -68,10 +65,11 @@ src/
     conversations/      Listado + drawer (timeline + contexto recuperado + feedback) + ocultar (DELETE = soft-delete) + deep-linking
     analytics/          KPIs + gráficos (Recharts) + filtros período/categoría/modelo/documento + export CSV
     audit/              Trazabilidad (GET /api/admin/audit + export CSV)
+    feedback/           Moderación global de feedback (GET /api/admin/feedback, filtro por rating)
     users/              Listado read-only (GET /api/admin/users; columnas membresía/institución)
     settings/           Lectura + edición de configuración institucional (GET/PUT /api/admin/config) + Correo/SMTP y Notificaciones (GET/PUT /api/admin/smtp, notifications, send-test)
     billing/            Módulo productivo: suscripción/pagos/comprobantes (con export CSV) + acciones Stripe (checkout, portal, cancel/reactivate, change-plan con GET /api/admin/plans, sync-plan, historial)
-    institution/        Módulo productivo: perfil de institución + snapshot (GET /me)
+    institution/        Módulo productivo: perfil de institución + snapshot (GET /me, PUT /me para editar nombre)
     platform/           Módulo productivo: consola superadmin (GET /api/platform/*) + CRUD de instituciones y planes + exportaciones CSV
   lib/                  http.ts (_cliente fetch con Authorization Bearer), supabase.ts, utils.ts
   stores/               auth.store (sesión), ui.store (sidebar), toast.store
@@ -98,13 +96,14 @@ Los headers delegados `X-External-Auth-Id`, `X-Auth-Provider`, `X-User-Type` y `
 Las páginas son `lazy(() => import(...))` en `src/app/router.tsx`. Vendors separados en chunks
 (Recharts, Supabase, TanStack Query, React Router) para minimizar el bundle inicial.
 
-## Deltas spec vs OpenAPI conocidas
+## Deltas de contrato conocidos
 
 Ver `../AGENTS.md` §"Known spec-vs-OpenAPI deltas". Las más relevantes en código:
 
 - **Reindex**: `POST /api/admin/reindex` con `documento_id?` en body (no `POST /api/admin/documents/{id}/reindex`).
 - **Métricas**: `GET /api/admin/metrics` con filtros `desde/hasta/categoria_id/modelo/documento_id` + `granularidad` (`day`) + `series`; además `top_documents` (documentos más consultados) y `documents_by_category` (distribución por categoría), consumidos por Analytics.
-- **Categories**: `GET /api/admin/categories` existe (paginado), y también `POST/PUT/DELETE`. Resolver `categoria_id` a `CategoryOut` en el cliente; CRUD en backend + UI de gestión (`CategoriesDialog` en DocumentsPage).
+- **Categories**: `GET /api/admin/categories` existe (paginado), y también `POST/PUT/DELETE`. Resolver `categoria_id` a `CategoryOut` en el cliente; CRUD en backend + UI de gestión (`CategoriesDialog` en DocumentsPage). Para un admin institucional la lista es la fusión globales + institucionales (precedencia institucional, dedupe por nombre case-insensitive); platform admin gestiona solo globales.
+- **Descarga de documento**: `GET /api/admin/documents/{id}/download` (blob del PDF de la versión activa, aislado por institución) → botón "Descargar PDF" en `DocumentDrawer`.
 - **Trailing slashes**: `/api/conversations/` lleva slash; `/api/conversations/{id}` no. Respétalo.
 - **Settings**: `GET /api/admin/config` + `PUT /api/admin/config/{clave}` reales (`editable_desde_dashboard`); bloques editables vs solo lectura.
 - **Audit**: `AuditLogOut` no trae prompt/respuesta/usuario → drawer enlaza a Conversations via `mensaje_id`.

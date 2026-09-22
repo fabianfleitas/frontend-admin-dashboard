@@ -80,3 +80,9 @@ export function reindex(documentoId?: number) {
 export function deactivateDocument(documentoId: number) {
   return http.delete<DocumentOut>(`/api/admin/documents/${documentoId}`)
 }
+
+export function downloadDocument(documentoId: number) {
+  return http.get<Blob>(`/api/admin/documents/${documentoId}/download`, {
+    responseType: 'blob',
+  })
+}

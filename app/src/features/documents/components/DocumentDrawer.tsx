@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { RefreshCw, Trash2, Upload, AlertTriangle } from 'lucide-react'
+import { RefreshCw, Trash2, Upload, Download, AlertTriangle } from 'lucide-react'
 import { Drawer } from '@/components/common/Drawer'
 import { Button } from '@/components/common/Button'
 import { Modal } from '@/components/common/Modal'
@@ -10,6 +10,7 @@ import { useDocument } from '../hooks/useDocument'
 import { useUploadVersion } from '../hooks/useUploadVersion'
 import { useReindex } from '../hooks/useReindex'
 import { useDeactivateDocument } from '../hooks/useDeactivateDocument'
+import { downloadDocument } from '../api/documents.service'
 import { useCategoriesLookup } from '../hooks/useCategories'
 import { VersionTimeline } from './VersionTimeline'
 import { DocumentStatusBadge } from './DocumentStatusBadge'
@@ -84,6 +85,23 @@ export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
     }
   }
 
+  async function handleDownload() {
+    if (!documentoId) return
+    try {
+      const blob = await downloadDocument(documentoId)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `documento-${documentoId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('No fue posible descargar el documento.')
+    }
+  }
+
   return (
     <Drawer
       open={documentoId !== null}
@@ -105,6 +123,10 @@ export function DocumentDrawer({ documentoId, onClose }: DocumentDrawerProps) {
             <Button variant="secondary" onClick={handleReindex} disabled={reindex.isPending}>
               <RefreshCw size={14} aria-hidden />
               {reindex.isPending ? 'Reindexando…' : 'Reindexar'}
+            </Button>
+            <Button variant="secondary" onClick={handleDownload}>
+              <Download size={14} aria-hidden />
+              Descargar PDF
             </Button>
             <Button onClick={() => fileInputRef.current?.click()} disabled={uploadVersion.isPending}>
               <Upload size={14} aria-hidden />

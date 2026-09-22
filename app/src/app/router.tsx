@@ -36,6 +36,9 @@ const AnalyticsPage = lazy(() =>
 const AuditPage = lazy(() =>
   import('@/features/audit/pages/AuditPage').then((m) => ({ default: m.AuditPage })),
 )
+const FeedbackPage = lazy(() =>
+  import('@/features/feedback/pages/FeedbackPage').then((m) => ({ default: m.FeedbackPage })),
+)
 const UsersPage = lazy(() =>
   import('@/features/users/pages/UsersPage').then((m) => ({ default: m.UsersPage })),
 )
@@ -107,6 +110,7 @@ export const router = createBrowserRouter([
       { path: '/conversations/:id', element: withGuard(<ConversationsPage />, 'member') },
       { path: '/analytics', element: withGuard(<AnalyticsPage />, 'staff') },
       { path: '/audit', element: withGuard(<AuditPage />, 'staff') },
+      { path: '/feedback', element: withGuard(<FeedbackPage />, 'staff') },
       { path: '/users', element: withGuard(<UsersPage />, 'admin') },
       { path: '/settings', element: withGuard(<SettingsPage />, 'admin') },
       { path: '/billing', element: withGuard(<BillingPage />, 'admin') },
