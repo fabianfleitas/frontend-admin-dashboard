@@ -1,7 +1,13 @@
 # QA Checklist — Validación manual contra backend real
 
-Fecha de referencia: 2026-09-20 (cubre hasta los estados 2026-09-20h/i del
-`TODO_BACKEND_CIERRE_MULTIINSTITUCION.md`).
+Fecha de referencia: 2026-09-22 (incluye S7 sesión, S8 ADMIN-only, S10 staff,
+S11 regeneración, S2 escalamientos, S4 judge).
+
+> **Cobertura automatizada:** muchas de estas validaciones ya están cubiertas por
+> `backend-agent-system` (pytest, 329 passed) y por `docs/EVIDENCIA_PRUEBAS.md`
+> + `EVIDENCIAS_MATRIZ.md`. Este checklist queda para la **validación manual**
+> con la app corriendo. Los ítems marcados `[x]` ya tienen evidencia automatizada
+> (no requieren repetirse manualmente salvo validación visual).
 
 Requiere: backend corriendo (`uvicorn app.main:app --reload`), dashboard en dev
 (`npm run dev`), `.env` reales (`VITE_API_URL`, `VITE_SUPABASE_URL`,
@@ -15,12 +21,13 @@ colección `bruno/` del backend.
 ## 1. Autenticación y sesión
 
 - [ ] Login con Supabase (Google) obtiene JWT; `GET /me` responde con Bearer.
-- [ ] `ADMIN` consume `/api/admin/*`; `SECRETARIA` solo lo permitido por UI.
-- [ ] `ESTUDIANTE` ve módulos base (dashboard, playground, conversaciones, analytics) sin admin.
+- [x] `ADMIN` vs `SECRETARIA`: granularidad cubierta por tests (`test_admin_role_granularity.py`).
+- [ ] `ESTUDIANTE` en el dashboard solo ve módulos base (Playground/Conversations ahora son `staff` — S10).
 - [ ] Usuario sin membresía cae en `/sin-membresia`.
-- [ ] Platform admin sin membresía NO accede a `/api/admin/*` (403) — solo `/platform/*`.
+- [x] Platform admin sin membresía NO accede a `/api/admin/*` (403) — cubierto por tests.
 - [ ] `PUT /me` actualiza `full_name` y `GET /me` lo refleja.
-- [ ] Usuario `is_active=false` en `app_users` → 401 (verificado en tests; opcional en QA).
+- [x] Usuario `is_active=false` → 401 (tests).
+- [ ] **Expiración por inactividad (S7)**: dejar la app 30 min sin tocar → aparece el Modal "Tu sesión está por expirar" y, si no se continúa, redirige a `/login`. Probar también el botón "Continuar sesión" (reinicia el timer). Config: `VITE_SESSION_IDLE_MINUTES`, `VITE_SESSION_WARNING_SECONDS`.
 
 ## 2. Dashboard
 
@@ -42,6 +49,8 @@ colección `bruno/` del backend.
 ## 4. Playground (chat + voz)
 
 - [ ] Chat por texto: consulta con fuentes recuperadas (`sources`) y feedback.
+- [ ] **Regenerar respuesta (S11)**: botón "Regenerar" **reemplaza** la última respuesta (no agrega un turno); el historial conserva 1 USER + 1 ASSISTANT.
+- [ ] **Judge (S4)**: con `judge_enabled=true` en Settings, los logs de auditoría muestran `JUDGE:ok` y scores de fidelidad/relevancia/contexto.
 - [ ] Voz: grabar/adjuntar audio → placeholder `[Audio]` → reproducción de la respuesta.
 - [ ] **Validar formato de grabación (webm/mp4) contra el STT real** (`STT_ENABLED=true`); si falla, documentar el MIME aceptado.
 - [ ] Feedback (👍/👎) registra `rating`.
@@ -51,8 +60,14 @@ colección `bruno/` del backend.
 - [ ] Listado + ocultar (soft-delete) + filtro "incluir ocultas".
 - [ ] Deep-linking `/conversations/:id` abre el detalle.
 - [ ] Drawer: `ContextViewer` muestra documentos recuperados de la última respuesta; `FeedbackBadge` refleja el `rating` por mensaje.
-- [ ] **Moderación de feedback (`/feedback`)**: listado paginado con filtro por valoración; columnas
+- [ ] **Moderación de feedback (`/feedback`, guard `admin` — S8)**: listado paginado con filtro por valoración; columnas
   rating, mensaje del asistente, comentario, enlace a la conversación y fecha. `GET /api/admin/feedback` con filtros (`rating`, `conversacion_id`).
+- [ ] **Escalamientos (`/escalamientos`, guard `staff` — S2)**: con `handoff_enabled=true`, una consulta fuera de dominio crea un escalamiento; listado con estado PENDING/RESOLVED y botón "Resolver".
+
+## 5b. Auditoría de acciones de gestión (S9)
+
+- [x] `DOC_UPLOAD`/`DOC_VERSION`/`CATEGORY_*`/`FEEDBACK_HIDE`/`PLATFORM_*`/`BILLING_*` quedan en `audit_logs` (cubierto por tests).
+- [ ] En `AuditPage`, los registros de gestión muestran "Gestión" (sin `mensaje_id`) y su `observaciones` con el tipo de acción.
 
 ## 6. Analytics
 

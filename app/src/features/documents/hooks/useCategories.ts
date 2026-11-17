@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { listCategories } from '../api/documents.service'
 import type { CategoryOut } from '../types'
 
-const CATEGORY_LIMIT = 200
+const CATEGORY_LIMIT = 100
 
 export function useCategories() {
   return useQuery({

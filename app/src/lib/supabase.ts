@@ -14,5 +14,8 @@ export const supabase = createClient(url, anonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    // Log detallado de sesión/refresh (`#_callRefreshToken`, margen de 90s).
+    // Opt-in con VITE_SUPABASE_DEBUG=true; nunca activo en producción.
+    debug: import.meta.env.DEV && import.meta.env.VITE_SUPABASE_DEBUG === 'true',
   },
 })

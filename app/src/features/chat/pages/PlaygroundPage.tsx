@@ -9,6 +9,7 @@ import { MetricsCard } from '../components/MetricsCard'
 import { FeedbackButtons } from '../components/FeedbackButtons'
 import { AudioPlayer } from '../components/AudioPlayer'
 import { useChatQuery } from '../hooks/useChatQuery'
+import { useChatRegenerate } from '../hooks/useChatRegenerate'
 import { useCreateConversation } from '../hooks/useCreateConversation'
 import { useSendVoice } from '../hooks/useSendVoice'
 import { ApiError } from '@/lib/http'
@@ -26,10 +27,11 @@ export function PlaygroundPage() {
 
   const createConversation = useCreateConversation()
   const chatQuery = useChatQuery()
+  const regenerate = useChatRegenerate()
   const voiceQuery = useSendVoice()
 
   const isLoading =
-    createConversation.isPending || chatQuery.isPending || voiceQuery.isPending
+    createConversation.isPending || chatQuery.isPending || voiceQuery.isPending || regenerate.isPending
   const lastAssistant = [...messages].reverse().find((m) => isAssistantMessage(m)) ?? null
 
   async function ensureConversation(): Promise<number | null> {
@@ -141,11 +143,11 @@ export function PlaygroundPage() {
     setInput('')
     setAudioInteraction(null)
     try {
-      const result = await chatQuery.mutateAsync({
-        conversation_id: conversationId,
-        message: lastQuery,
-      })
-      setMessages((prev) => [...prev, result.user_message, result.assistant_message])
+      const result = await regenerate.mutateAsync(conversationId)
+      // Reemplazo in-place de la última respuesta del asistente (S11)
+      setMessages((prev) =>
+        prev.map((m) => (m.rol_mensaje === 'ASSISTANT' ? result.assistant_message : m)),
+      )
       setSources(result.sources)
     } catch (err) {
       toast.error(
@@ -174,7 +176,7 @@ export function PlaygroundPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          AI Agent Playground
+          Agente de IA
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Entorno de validación del sistema RAG. Diagnóstico, pruebas y análisis.

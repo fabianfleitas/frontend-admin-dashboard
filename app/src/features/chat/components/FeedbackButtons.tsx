@@ -40,7 +40,7 @@ export function FeedbackButtons({ messageId, auditId, disabled }: FeedbackButton
         className={cn(
           'rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-60',
           selected === 'up'
-            ? 'bg-success/10 text-success'
+            ? 'bg-success-subtle text-success'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
         )}
         aria-label="Respuesta útil"
@@ -55,7 +55,7 @@ export function FeedbackButtons({ messageId, auditId, disabled }: FeedbackButton
         className={cn(
           'rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-60',
           selected === 'down'
-            ? 'bg-danger/10 text-danger'
+            ? 'bg-danger-subtle text-danger'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
         )}
         aria-label="Respuesta no útil"

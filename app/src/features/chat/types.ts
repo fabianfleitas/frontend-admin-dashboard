@@ -39,6 +39,14 @@ export interface ChatQueryOut {
   assistant_message: MessageOut
 }
 
+export interface ChatRegenerateOut {
+  response: string
+  sources: SourceOut[]
+  audit_id: string
+  conversation_id: number
+  assistant_message: MessageOut
+}
+
 export function isAssistantMessage(m: { rol_mensaje: MessageRole }): boolean {
   return m.rol_mensaje === 'ASSISTANT'
 }

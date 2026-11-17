@@ -5,8 +5,16 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedRoute, type RouteGuard } from '@/components/common/ProtectedRoute'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { NoMembershipPage } from '@/features/auth/pages/NoMembershipPage'
-import { LandingPage } from '@/features/landing/pages/LandingPage'
 import { TermsPage } from '@/features/landing/pages/TermsPage'
+
+const LandingPage = lazy(() =>
+  import('@/features/landing/pages/LandingPage').then((m) => ({ default: m.LandingPage })),
+)
+const SolicitarAccesoPage = lazy(() =>
+  import('@/features/solicitudes/pages/SolicitarAccesoPage').then((m) => ({
+    default: m.SolicitarAccesoPage,
+  })),
+)
 
 const DashboardPage = lazy(() =>
   import('@/features/dashboard/pages/DashboardPage').then((m) => ({
@@ -38,6 +46,11 @@ const AuditPage = lazy(() =>
 )
 const FeedbackPage = lazy(() =>
   import('@/features/feedback/pages/FeedbackPage').then((m) => ({ default: m.FeedbackPage })),
+)
+const EscalamientosPage = lazy(() =>
+  import('@/features/escalamientos/pages/EscalamientosPage').then((m) => ({
+    default: m.EscalamientosPage,
+  })),
 )
 const UsersPage = lazy(() =>
   import('@/features/users/pages/UsersPage').then((m) => ({ default: m.UsersPage })),
@@ -77,11 +90,23 @@ function withGuard(element: React.ReactElement, guard: RouteGuard = 'authenticat
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <LandingPage />,
+    element: (
+      <Suspense fallback={<div className="min-h-screen bg-surface-canvas" />}>
+        <LandingPage />
+      </Suspense>
+    ),
   },
   {
     path: '/terminos',
     element: <TermsPage />,
+  },
+  {
+    path: '/solicitar-acceso',
+    element: (
+      <Suspense fallback={<div className="min-h-screen bg-surface-canvas" />}>
+        <SolicitarAccesoPage />
+      </Suspense>
+    ),
   },
   {
     path: '/login',
@@ -105,12 +130,13 @@ export const router = createBrowserRouter([
       { path: '/dashboard', element: withGuard(<DashboardPage />, 'member') },
       { path: '/documents', element: withGuard(<DocumentsPage />, 'staff') },
       { path: '/documents/:id', element: withGuard(<DocumentsPage />, 'staff') },
-      { path: '/playground', element: withGuard(<PlaygroundPage />, 'member') },
-      { path: '/conversations', element: withGuard(<ConversationsPage />, 'member') },
-      { path: '/conversations/:id', element: withGuard(<ConversationsPage />, 'member') },
+      { path: '/playground', element: withGuard(<PlaygroundPage />, 'staff') },
+      { path: '/conversations', element: withGuard(<ConversationsPage />, 'staff') },
+      { path: '/conversations/:id', element: withGuard(<ConversationsPage />, 'staff') },
       { path: '/analytics', element: withGuard(<AnalyticsPage />, 'staff') },
       { path: '/audit', element: withGuard(<AuditPage />, 'staff') },
-      { path: '/feedback', element: withGuard(<FeedbackPage />, 'staff') },
+      { path: '/feedback', element: withGuard(<FeedbackPage />, 'admin') },
+      { path: '/escalamientos', element: withGuard(<EscalamientosPage />, 'staff') },
       { path: '/users', element: withGuard(<UsersPage />, 'admin') },
       { path: '/settings', element: withGuard(<SettingsPage />, 'admin') },
       { path: '/billing', element: withGuard(<BillingPage />, 'admin') },

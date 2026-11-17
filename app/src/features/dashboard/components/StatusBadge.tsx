@@ -9,9 +9,9 @@ interface StatusBadgeProps {
 }
 
 const TONE_CLASSES: Record<Tone, string> = {
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  danger: 'bg-danger/10 text-danger',
+  success: 'bg-success-subtle text-success',
+  warning: 'bg-warning-subtle text-warning',
+  danger: 'bg-danger-subtle text-danger',
   neutral: 'bg-muted text-muted-foreground',
 }
 

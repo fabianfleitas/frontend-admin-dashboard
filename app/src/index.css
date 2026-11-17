@@ -1,24 +1,36 @@
 @import "tailwindcss";
+@import "./styles/voxia.css";
 
 @theme {
-  --color-background: #fafafa;
+  /* Tokens legacy de la app, con los valores Voxia. Deben ser hex LITERALES:
+     Tailwind v4 no parsea `var(--referencia)` como color, y en los modificadores
+     de opacidad (`bg-primary/10`) descarta el alfa en silencio, dejando el color
+     a opacidad 100%. Mantener en sync con los tokens --vx-* de styles/voxia.css. */
+  --color-background: #f3f9ff;
   --color-surface: #ffffff;
-  --color-border: #e4e4e7;
-  --color-primary: #4f46e5;
+  --color-border: #e5e8ec;
+  --color-primary: #345a7d;
   --color-primary-foreground: #ffffff;
-  --color-foreground: #18181b;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
+  --color-foreground: #182734;
+  --color-muted: #f0f2f4;
+  --color-muted-foreground: #696f78;
+
+  --color-success: #15803d;
+  --color-success-subtle: #ecfdf3;
+  --color-success-border: #a7e3bf;
+  --color-warning: #b45309;
+  --color-warning-subtle: #fffaeb;
+  --color-warning-border: #f5d48a;
+  --color-danger: #b91c1c;
+  --color-danger-subtle: #fef3f2;
+  --color-danger-border: #f5b8b2;
 
   --font-sans:
-    "Inter", "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Inter", "Inter var", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
 
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
 }
 
 @layer base {

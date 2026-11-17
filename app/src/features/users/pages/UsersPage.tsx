@@ -18,9 +18,9 @@ export function UsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Users</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Usuarios</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Usuarios autorizados al dashboard. Listado en modo solo lectura (MVP).
+          Usuarios autorizados al panel. Listado en modo solo lectura (MVP).
         </p>
       </div>
 

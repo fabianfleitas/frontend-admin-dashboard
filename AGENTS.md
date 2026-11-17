@@ -20,13 +20,13 @@ app/                      # SPA root (Vite project)
     app/                 # App.tsx, router.tsx, providers.tsx, query-client.ts
     components/           # common/, forms/, layout/, tables/, charts/, feedback/
     features/<modulo>/    # api/, components/, hooks/, pages/, schemas/, types/, index.ts
-    lib/                  # http.ts (fetch client), supabase.ts
+    lib/                  # http.ts (fetch client), supabase.ts, auth-errors.ts (clasificador de 401)
     stores/               # Zustand stores (auth, ui)
     types/                # shared types
   .env.example            # VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 ```
 
-Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`. `landing` es público (fuera de `ProtectedRoute`). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura + acciones Stripe: checkout/portal, cancel/reactivate, change-plan con `GET /api/admin/plans`, sync-plan, historial), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en el repo backend (`backend-agent-system/openapi.current.json`).
+Features: `landing` (página pública + términos, rutas `/` y `/terminos`), `auth`, `dashboard`, `documents`, `chat` (Playground), `conversations`, `analytics`, `audit`, `users`, `settings`, `feedback`, `escalamientos` (derivación a operador: listado con filtro por estado, enlace a conversación y acción "Resolver", ruta `/escalamientos` guard `staff`). `landing` es público (fuera de `ProtectedRoute`). `SessionProvider` (montado una vez en `providers`) es la única fuente de verdad de la sesión Supabase — `useSession()` es un selector puro de Zustand, sin efectos. `SessionIdleWatcher` (montado en `providers`) cierra la sesión por inactividad según `VITE_SESSION_IDLE_MINUTES` (default 30, 0 = desactivado). `billing`, `institution` y `platform` son **módulos productivos** (Fase 5 + cierre integral): `BillingPage` (lectura + acciones Stripe: checkout/portal, cancel/reactivate, change-plan con `GET /api/admin/plans`, sync-plan, historial), `InstitutionPage` (perfil + snapshot), `PlatformPage` (consola superadmin con instituciones, miembros, métricas, audit, usuarios, planes, suscripciones). El contrato real está en el repo backend (`backend-agent-system/openapi.current.json`).
 
 ## Developer commands
 
@@ -51,6 +51,8 @@ The backend validates **Supabase JWTs directly**. `lib/http.ts` must send the Su
 
 - `Authorization: Bearer <jwt>` — the user's Supabase access token.
 
+Métodos de login en el front (`LoginPage`) según flags (`src/lib/auth-methods.ts`): `VITE_AUTH_EMAIL_PASSWORD_ENABLED` (correo+contraseña vía `supabase.auth.signInWithPassword`; default **false**) y `VITE_AUTH_GOOGLE_ENABLED` (default **true**). Un valor distinto de `'true'` desactiva el método; vacío/sin definir cae al default. El login por correo no requiere cambios de backend: el token resultante se valida igual que el de Google.
+
 The delegated headers `X-External-Auth-Id`, `X-Auth-Provider`, `X-User-Type` and `X-User-Email` are **obsolete** — do not send them.
 
 `GET /me` is the source of truth for the UI session. Permission model:
@@ -60,6 +62,16 @@ The delegated headers `X-External-Auth-Id`, `X-Auth-Provider`, `X-User-Type` and
 - `role` (`STUDENT | STAFF | ADMIN`) is **legacy** — do not use it as the primary permission source.
 
 Guards/UI should use the helpers in `app/src/lib/roles.ts` (`hasInstitutionMembership`, `isInstitutionAdmin`, `isStaffMember`, `isPlatformAdmin`). Users with no active institutional membership (no `institucion_id`/`tipo_miembro`) cannot enter admin modules → route to `/sin-membresia`. `404` may also mean a resource belonging to another institution.
+
+### Session-loss rules (do not regress)
+
+These were the cause of intermittent logouts when navigating between sections:
+
+- **Never use `supabase.auth.getUser()` as a token gate.** It is a network round-trip to Supabase per request; a transient failure used to yield a header-less request → `401` → global `signOut()`. `lib/http.ts` reads the token with `getSession()` only (storage-first, refreshes when inside the 90s expiry margin).
+- **Never send a request without `Authorization`.** If there is no token, throw `SessionMissingError` before the `fetch`.
+- **A `401` does not always mean the session died.** The backend calls Supabase to verify the JWT on *every* request (`backend-agent-system/app/core/security.py`), and converts network failures into `401 "JWT verification failed"`. Use `classifyUnauthorized()` from `lib/auth-errors.ts`: only `session_fatal` verdicts (`Missing Authorization header`, `Invalid Authorization format`, `Invalid or expired JWT`, `Inactive user`) trigger `signOut()`; `transient` ones just propagate so React Query can retry. Unknown `detail` defaults to `transient` (fail-safe: never sign the user out on an unrecognised `401`).
+- `SessionProvider` (mounted once in `app/src/app/providers.tsx`) is the **only** place that reads the initial session and subscribes to `onAuthStateChange`. `useSession()` is a pure store selector — it must not have effects, because `router.tsx` mounts one `ProtectedRoute` per route and effects there re-ran on every navigation.
+- Debug a lost session by filtering the console for `[auth]`: the `401` log includes `verdict`, `detail` and `tokenAgeMs`. Set `VITE_SUPABASE_DEBUG=true` (dev only) for Supabase's own refresh trace.
 
 ## Known spec-vs-OpenAPI deltas (do not re-discover)
 

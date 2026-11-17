@@ -25,7 +25,7 @@ export function FeedbackBadge({ rating, className }: FeedbackBadgeProps) {
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs',
-        positive ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger',
+        positive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger',
         className,
       )}
     >

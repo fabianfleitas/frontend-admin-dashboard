@@ -3,8 +3,8 @@ import { useToastStore, type ToastTone } from '@/stores/toast.store'
 import { cn } from '@/lib/utils'
 
 const TONE_CLASSES: Record<ToastTone, string> = {
-  success: 'border-success/40 bg-success/10 text-success',
-  error: 'border-danger/40 bg-danger/10 text-danger',
+  success: 'border-success/40 bg-success-subtle text-success',
+  error: 'border-danger/40 bg-danger-subtle text-danger',
   info: 'border-primary/40 bg-primary/10 text-primary',
 }
 

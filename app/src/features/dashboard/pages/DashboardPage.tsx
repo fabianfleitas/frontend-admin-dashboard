@@ -55,9 +55,9 @@ export function DashboardPage() {
 
   const canManageDocuments = isStaff
   const quickActions = [
-    { to: '/documents', label: 'Subir documento', description: 'Knowledge Base', icon: Upload, guard: canManageDocuments },
-    { to: '/documents', label: 'Knowledge Base', description: 'Gestionar documentos', icon: BookOpen, guard: canManageDocuments },
-    { to: '/playground', label: 'Playground', description: 'Probar asistente IA', icon: Bot, guard: true },
+    { to: '/documents', label: 'Subir documento', description: 'Base de conocimiento', icon: Upload, guard: canManageDocuments },
+    { to: '/documents', label: 'Base de conocimiento', description: 'Gestionar documentos', icon: BookOpen, guard: canManageDocuments },
+    { to: '/playground', label: 'Agente de IA', description: 'Probar el asistente', icon: Bot, guard: true },
     { to: '/audit', label: 'Auditoría', description: 'Trazabilidad', icon: ShieldCheck, guard: canManageDocuments },
     { to: '/documents', label: 'Reindexar', description: 'Volver a indexar', icon: Upload, guard: canManageDocuments },
   ].filter((a) => a.guard)
@@ -65,7 +65,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Panel</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Resumen general del estado del sistema RAG.
         </p>

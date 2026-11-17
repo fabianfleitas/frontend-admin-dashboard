@@ -2,14 +2,19 @@ import { Link, useLocation } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 
 const LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
-  documents: 'Knowledge Base',
-  playground: 'AI Agent',
-  conversations: 'Conversations',
-  analytics: 'Analytics',
-  audit: 'Audit',
-  users: 'Users',
-  settings: 'Settings',
+  dashboard: 'Panel',
+  documents: 'Base de conocimiento',
+  playground: 'Agente de IA',
+  conversations: 'Conversaciones',
+  analytics: 'Analítica',
+  audit: 'Auditoría',
+  users: 'Usuarios',
+  settings: 'Configuración',
+  feedback: 'Retroalimentación',
+  escalamientos: 'Derivaciones',
+  billing: 'Facturación',
+  institution: 'Institución',
+  platform: 'Plataforma',
 }
 
 export function Breadcrumb() {

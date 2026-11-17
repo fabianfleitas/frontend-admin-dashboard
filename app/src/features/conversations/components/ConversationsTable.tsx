@@ -61,7 +61,7 @@ export function ConversationsTable({
             <th className="px-4 py-3 font-medium">Título</th>
             <th className="px-4 py-3 font-medium">Mensajes</th>
             <th className="px-4 py-3 font-medium">Última interacción</th>
-            <th className="px-4 py-3 font-medium">Feedback</th>
+            <th className="px-4 py-3 font-medium">Valoración</th>
             <th className="px-4 py-3 font-medium">Latencia</th>
           </tr>
         </thead>

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { http } from '@/lib/http'
+import { mapAuthError } from '@/features/auth/lib/auth-messages'
 import type { User } from '@supabase/supabase-js'
 import type { UserOut } from '@/features/users/types'
 
@@ -10,6 +11,11 @@ export async function signInWithGoogle(): Promise<void> {
       redirectTo: `${window.location.origin}/dashboard`,
     },
   })
+}
+
+export async function signInWithEmailPassword(email: string, password: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw new Error(mapAuthError(error))
 }
 
 export async function signOut(): Promise<void> {

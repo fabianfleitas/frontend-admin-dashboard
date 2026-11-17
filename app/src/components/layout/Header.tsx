@@ -51,8 +51,8 @@ export function Header() {
             </span>
           )}
           {profile?.is_platform_admin && (
-            <span className="hidden rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary sm:inline-flex">
-              Platform Admin
+            <span className="hidden rounded-full bg-primary-subtle px-2.5 py-0.5 text-xs font-medium text-primary sm:inline-flex">
+              Administrador de plataforma
             </span>
           )}
         </div>

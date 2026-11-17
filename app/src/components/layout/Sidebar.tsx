@@ -7,6 +7,7 @@ import {
   BarChart3,
   ShieldCheck,
   ThumbsUp,
+  Inbox,
   Users,
   Settings,
   Building2,
@@ -18,6 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthCapabilities } from '@/features/auth/hooks/useAuthCapabilities'
+import { BrandLogo } from '@/components/common/BrandLogo'
 import type { RouteGuard } from '@/components/common/ProtectedRoute'
 
 interface NavItem {
@@ -28,18 +30,19 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, guard: 'member' },
-  { to: '/documents', label: 'Knowledge Base', icon: BookOpen, guard: 'staff' },
-  { to: '/playground', label: 'AI Agent', icon: Bot, guard: 'member' },
-  { to: '/conversations', label: 'Conversations', icon: MessagesSquare, guard: 'member' },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3, guard: 'staff' },
-  { to: '/audit', label: 'Audit', icon: ShieldCheck, guard: 'staff' },
-  { to: '/feedback', label: 'Feedback', icon: ThumbsUp, guard: 'staff' },
-  { to: '/users', label: 'Users', icon: Users, guard: 'admin' },
-  { to: '/settings', label: 'Settings', icon: Settings, guard: 'admin' },
+  { to: '/dashboard', label: 'Panel', icon: LayoutDashboard, guard: 'member' },
+  { to: '/documents', label: 'Base de conocimiento', icon: BookOpen, guard: 'staff' },
+  { to: '/playground', label: 'Agente de IA', icon: Bot, guard: 'staff' },
+  { to: '/conversations', label: 'Conversaciones', icon: MessagesSquare, guard: 'staff' },
+  { to: '/analytics', label: 'Analítica', icon: BarChart3, guard: 'staff' },
+  { to: '/audit', label: 'Auditoría', icon: ShieldCheck, guard: 'staff' },
+  { to: '/feedback', label: 'Retroalimentación', icon: ThumbsUp, guard: 'admin' },
+  { to: '/escalamientos', label: 'Derivaciones', icon: Inbox, guard: 'staff' },
+  { to: '/users', label: 'Usuarios', icon: Users, guard: 'admin' },
+  { to: '/settings', label: 'Configuración', icon: Settings, guard: 'admin' },
   { to: '/institution', label: 'Institución', icon: Building2, guard: 'admin' },
-  { to: '/billing', label: 'Billing', icon: CreditCard, guard: 'admin' },
-  { to: '/platform', label: 'Platform', icon: Globe, guard: 'platform' },
+  { to: '/billing', label: 'Facturación', icon: CreditCard, guard: 'admin' },
+  { to: '/platform', label: 'Plataforma', icon: Globe, guard: 'platform' },
 ]
 
 export function Sidebar() {
@@ -66,20 +69,29 @@ export function Sidebar() {
       )}
       aria-label="Navegación principal"
     >
-      <div className="flex h-14 items-center justify-between border-b px-3">
-        {!collapsed && (
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            Admin Dashboard
-          </span>
+      <div
+        className={cn(
+          'flex h-14 items-center justify-between border-b',
+          collapsed ? 'px-1.5' : 'px-3',
+        )}
+      >
+        {collapsed ? (
+          <BrandLogo icon className="h-6" />
+        ) : (
+          <BrandLogo className="h-7" sloganClassName="text-[9px] leading-none" />
         )}
         <button
           type="button"
           onClick={toggle}
-          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+          className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label={collapsed ? 'Expandir navegación lateral' : 'Colapsar navegación lateral'}
           title={collapsed ? 'Expandir' : 'Colapsar'}
         >
-          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          {collapsed ? (
+            <PanelLeftOpen size={16} aria-hidden />
+          ) : (
+            <PanelLeftClose size={18} aria-hidden />
+          )}
         </button>
       </div>
 

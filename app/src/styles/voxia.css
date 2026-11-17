@@ -1,0 +1,133 @@
+/*
+ * Voxia 1.0.0 — tokens de marca.
+ * Copia local de branding/tokens/ (admin-dashboard se despliega aparte).
+ * Los nombres del bloque @theme están namespaced (brand-*, text-*, surface-*)
+ * para poder migrar la landing sin alterar el @theme legacy de la app.
+ */
+
+:root {
+  /* ---- superficie ---- */
+  --vx-surface-canvas: #f3f9ff;
+  --vx-surface-raised: #ffffff;
+  --vx-surface-sunken: #f0f2f4;
+  --vx-surface-inverse: #0b1120;
+  --vx-surface-inverse-raised: #182734;
+
+  /* ---- texto ---- */
+  --vx-text-primary: #182734;
+  --vx-text-secondary: #696f78;
+  --vx-text-tertiary: #838991;
+  --vx-text-on-dark: #e6edf7;
+  --vx-text-on-dark-secondary: #bec3c9;
+
+  /* ---- marca ---- */
+  --vx-brand-primary: #345a7d;
+  --vx-brand-primary-hover: #263f57;
+  --vx-brand-primary-active: #182734;
+  --vx-brand-900: #263f57;
+  --vx-brand-subtle: #f3f9ff;
+  --vx-brand-border: #d3ebff;
+  --vx-brand-border-strong: #9ac8f4;
+  --vx-accent: #207e7a;
+  --vx-accent-hover: #1c6360;
+  --vx-accent-subtle: #f0fbfa;
+  --vx-accent-border: #c2f3f0;
+  --vx-accent-on-dark: #78d5d0;
+
+  /* ---- bordes ---- */
+  --vx-border-subtle: #e5e8ec;
+  --vx-border-default: #d5d8dd;
+
+  /* ---- estados ---- */
+  --vx-success: #15803d;
+  --vx-success-subtle: #ecfdf3;
+  --vx-warning: #b45309;
+  --vx-warning-subtle: #fffaeb;
+  --vx-danger: #b91c1c;
+  --vx-danger-subtle: #fef3f2;
+
+  /* ---- rampa signal (series de datos, nunca la de marca) ---- */
+  --vx-signal-500: #4cb6c5;
+  --vx-signal-600: #2899a7;
+
+  /* ---- rampa neutral (categorías, estados inertes) ---- */
+  --vx-neutral-800: #505761;
+
+  /* ---- tipografía ---- */
+  --vx-font-sans: Inter, 'Inter var', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --vx-font-display: 'Inter Display', Inter, system-ui, -apple-system, sans-serif;
+
+  /* ---- sombras ---- */
+  --vx-shadow-xs: 0 1px 2px rgba(15, 36, 60, 0.06);
+  --vx-shadow-sm: 0 3px 8px rgba(15, 36, 60, 0.08), 0 1px 2px rgba(15, 36, 60, 0.04);
+  --vx-shadow-md: 0 4px 12px rgba(15, 36, 60, 0.08), 0 2px 4px rgba(15, 36, 60, 0.04);
+  --vx-shadow-lg: 0 12px 32px rgba(15, 36, 60, 0.12), 0 4px 8px rgba(15, 36, 60, 0.06);
+}
+
+@theme {
+  --color-surface-canvas: #f3f9ff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f0f2f4;
+  --color-surface-inverse: #0b1120;
+  --color-surface-inverse-raised: #182734;
+
+  --color-text-primary: #182734;
+  --color-text-secondary: #696f78;
+  --color-text-tertiary: #838991;
+  --color-text-on-dark: #e6edf7;
+  --color-text-on-dark-secondary: #bec3c9;
+
+  --color-brand-primary: #345a7d;
+  --color-brand-primary-hover: #263f57;
+  --color-brand-primary-active: #182734;
+  --color-brand-900: #263f57;
+  --color-brand-subtle: #f3f9ff;
+  --color-brand-border: #d3ebff;
+  --color-brand-border-strong: #9ac8f4;
+
+  --color-accent: #207e7a;
+  --color-accent-hover: #1c6360;
+  --color-accent-subtle: #f0fbfa;
+  --color-accent-border: #c2f3f0;
+  --color-accent-on-dark: #78d5d0;
+
+  --color-line-subtle: #e5e8ec;
+  --color-line-default: #d5d8dd;
+
+  --color-state-success: #15803d;
+  --color-state-success-subtle: #ecfdf3;
+  --color-state-warning: #b45309;
+  --color-state-warning-subtle: #fffaeb;
+  --color-state-danger: #b91c1c;
+  --color-state-danger-subtle: #fef3f2;
+
+  --color-signal-500: #4cb6c5;
+  --color-signal-600: #2899a7;
+
+  --color-neutral-800: #505761;
+
+  --font-brand: 'Inter Display', Inter, system-ui, -apple-system, sans-serif;
+
+  --shadow-brand-xs: 0 1px 2px rgba(15, 36, 60, 0.06);
+  --shadow-brand-sm: 0 3px 8px rgba(15, 36, 60, 0.08), 0 1px 2px rgba(15, 36, 60, 0.04);
+  --shadow-brand-md: 0 4px 12px rgba(15, 36, 60, 0.08), 0 2px 4px rgba(15, 36, 60, 0.04);
+  --shadow-brand-lg: 0 12px 32px rgba(15, 36, 60, 0.12), 0 4px 8px rgba(15, 36, 60, 0.06);
+}
+
+.vx-wordmark {
+  font-family: var(--vx-font-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.vx-slogan {
+  font-family: var(--vx-font-sans);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--vx-text-secondary);
+}
+
+.vx-slogan--on-dark {
+  color: var(--vx-text-on-dark-secondary);
+}

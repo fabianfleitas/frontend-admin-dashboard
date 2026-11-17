@@ -21,6 +21,8 @@ import { Modal } from '@/components/common/Modal'
 import { Select } from '@/components/forms/Select'
 import { toast } from '@/stores/toast.store'
 import { isNotFound } from '@/lib/http'
+import { formatDate, formatMoney, formatNumber } from '@/lib/utils'
+import { formatEstadoSuscripcion, formatIntervalo, formatStripeStatus } from '../lib/labels'
 import { CreditCard, Trash2, RefreshCcw, ExternalLink, Zap, Repeat, Download } from 'lucide-react'
 import { exportCsv } from '@/lib/download'
 
@@ -131,7 +133,7 @@ export function BillingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Billing</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Facturación</h1>
         <p className="mt-1 text-sm text-muted-foreground">Suscripción, pagos y comprobantes de la institución.</p>
       </div>
 
@@ -144,10 +146,10 @@ export function BillingPage() {
             {loading ? <Skeleton className="h-24 w-full" /> : plan ? (
               <div className="grid gap-3 sm:grid-cols-3">
                 <div><div className="text-xs text-muted-foreground">Nombre</div><div className="text-sm font-medium">{plan.nombre}</div></div>
-                <div><div className="text-xs text-muted-foreground">Precio</div><div className="text-sm font-medium">{plan.precio} {plan.moneda}</div></div>
-                <div><div className="text-xs text-muted-foreground">Intervalo</div><div className="text-sm font-medium">{plan.intervalo}</div></div>
-                <div><div className="text-xs text-muted-foreground">Máx. documentos</div><div className="text-sm font-medium">{plan.max_documentos}</div></div>
-                <div><div className="text-xs text-muted-foreground">Máx. usuarios</div><div className="text-sm font-medium">{plan.max_usuarios}</div></div>
+                <div><div className="text-xs text-muted-foreground">Precio</div><div className="text-sm font-medium">{formatMoney(plan.precio, plan.moneda)}</div></div>
+                <div><div className="text-xs text-muted-foreground">Intervalo</div><div className="text-sm font-medium">{formatIntervalo(plan.intervalo)}</div></div>
+                <div><div className="text-xs text-muted-foreground">Máx. documentos</div><div className="text-sm font-medium">{plan.max_documentos != null ? formatNumber(plan.max_documentos) : 'Ilimitado'}</div></div>
+                <div><div className="text-xs text-muted-foreground">Máx. usuarios</div><div className="text-sm font-medium">{formatNumber(plan.max_usuarios)}</div></div>
                 <div><div className="text-xs text-muted-foreground">Estado</div><div className="text-sm font-medium">{plan.activo ? 'Activo' : 'Inactivo'}</div></div>
               </div>
             ) : <div className="text-sm text-muted-foreground">Sin plan definido.</div>}
@@ -157,9 +159,9 @@ export function BillingPage() {
             <SectionTitle title="Suscripción institucional" description="Origen: GET /api/admin/subscription" />
             {loading ? <Skeleton className="h-24 w-full" /> : sub ? (
               <div className="grid gap-3 sm:grid-cols-3">
-                <div><div className="text-xs text-muted-foreground">Estado</div><div className="text-sm font-medium">{sub.estado}</div></div>
-                <div><div className="text-xs text-muted-foreground">Inicio</div><div className="text-sm font-medium">{sub.fecha_inicio}</div></div>
-                <div><div className="text-xs text-muted-foreground">Vencimiento</div><div className="text-sm font-medium">{sub.fecha_vencimiento}</div></div>
+                <div><div className="text-xs text-muted-foreground">Estado</div><div className="text-sm font-medium">{formatEstadoSuscripcion(sub.estado)}</div></div>
+                <div><div className="text-xs text-muted-foreground">Inicio</div><div className="text-sm font-medium">{formatDate(sub.fecha_inicio)}</div></div>
+                <div><div className="text-xs text-muted-foreground">Vencimiento</div><div className="text-sm font-medium">{formatDate(sub.fecha_vencimiento)}</div></div>
                 <div><div className="text-xs text-muted-foreground">Renovación</div><div className="text-sm font-medium">{sub.auto_renovacion ? 'Sí' : 'No'}</div></div>
                 <div><div className="text-xs text-muted-foreground">Plan</div><div className="text-sm font-medium">{sub.plan?.nombre ?? '—'}</div></div>
                 <div><div className="text-xs text-muted-foreground">Stripe Sub</div><div className="text-sm font-medium truncate">{sub.stripe_subscription_id ?? '—'}</div></div>
@@ -172,7 +174,7 @@ export function BillingPage() {
             <SectionTitle title="Estado Stripe" description="Origen: GET /api/admin/stripe/subscription" />
             {stripeSub.isLoading ? <Skeleton className="h-24 w-full" /> : stripeSubscription ? (
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-                <div><div className="text-xs text-muted-foreground">Status</div><div className="text-sm font-medium">{stripeSubscription.status ?? '—'}</div></div>
+                <div><div className="text-xs text-muted-foreground">Status</div><div className="text-sm font-medium">{formatStripeStatus(stripeSubscription.status)}</div></div>
                 <div><div className="text-xs text-muted-foreground">Cancelación al período</div><div className="text-sm font-medium">{stripeSubscription.cancel_at_period_end ? 'Sí' : 'No'}</div></div>
                 <div><div className="text-xs text-muted-foreground">Período inicio</div><div className="text-sm font-medium">{stripeSubscription.current_period_start ?? '—'}</div></div>
                 <div><div className="text-xs text-muted-foreground">Período fin</div><div className="text-sm font-medium">{stripeSubscription.current_period_end ?? '—'}</div></div>

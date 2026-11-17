@@ -74,7 +74,7 @@ export function AnalyticsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Analytics</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Analítica</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Indicadores operativos y de uso del sistema RAG.
           </p>
@@ -132,18 +132,18 @@ export function AnalyticsPage() {
 
           <section className="grid gap-4 lg:grid-cols-2">
             <ChartLine title="Tendencia de consultas" data={queriesTrend} />
-            <ChartLine title="Tokens (input + output)" data={tokensTrend} color="#16a34a" />
-            <ChartBar title="Tokens por modelo" data={tokensByModelChart} color="#0ea5e9" />
+            <ChartLine title="Tokens (input + output)" data={tokensTrend} color="var(--color-success)" />
+            <ChartBar title="Tokens por modelo" data={tokensByModelChart} color="var(--color-signal-500)" />
             <ChartBar
               title="Documentos más consultados"
               data={topDocumentsChart}
-              color="#0ea5e9"
+              color="var(--color-accent)"
               emptyMessage="Aún no hay documentos consultados para los filtros seleccionados."
             />
             <ChartBar
               title="Distribución por categoría"
               data={byCategoryChart}
-              color="#8b5cf6"
+              color="var(--color-neutral-800)"
               emptyMessage="Aún no hay consultas por categoría para los filtros seleccionados."
             />
           </section>

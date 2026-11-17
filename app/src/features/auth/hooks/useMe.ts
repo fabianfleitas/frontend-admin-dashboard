@@ -18,7 +18,7 @@ export function useMe() {
   const isAuthenticated = Boolean(user)
 
   const query = useQuery({
-    queryKey: ['me'],
+    queryKey: ['me', user?.id],
     queryFn: getMe,
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,

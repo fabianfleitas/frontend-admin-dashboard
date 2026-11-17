@@ -2,7 +2,7 @@ import type { PaginatedResponse } from '@/types/pagination'
 
 export interface AuditLogOut {
   id: string
-  mensaje_id: number
+  mensaje_id: number | null
   score_fidelidad: number | null
   score_relevancia: number | null
   score_contexto: number | null

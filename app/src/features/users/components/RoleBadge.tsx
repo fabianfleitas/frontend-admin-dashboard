@@ -10,8 +10,8 @@ const ROLE_CONFIG: Record<UserRole, { label: string; tone: Tone }> = {
 }
 
 const TONE_CLASSES: Record<Tone, string> = {
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
+  success: 'bg-success-subtle text-success',
+  warning: 'bg-warning-subtle text-warning',
   neutral: 'bg-muted text-muted-foreground',
 }
 

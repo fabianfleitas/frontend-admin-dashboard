@@ -16,7 +16,7 @@ interface AuditTableProps {
 function matchSearch(log: AuditLogOut, q: string): boolean {
   return (
     log.id.toLowerCase().includes(q) ||
-    String(log.mensaje_id).includes(q) ||
+    (log.mensaje_id !== null && String(log.mensaje_id).includes(q)) ||
     (log.observaciones ?? '').toLowerCase().includes(q)
   )
 }
@@ -96,7 +96,7 @@ export function AuditTable({
                   {log.id.slice(0, 8)}…
                 </td>
                 <td className="px-4 py-3 font-mono text-xs text-foreground">
-                  #{log.mensaje_id}
+                  {log.mensaje_id !== null ? `#${log.mensaje_id}` : 'Gestión'}
                 </td>
                 <td className={cn('px-4 py-3 font-medium', TONE_CLASSES[scoreTone(log.score_fidelidad)])}>
                   {log.score_fidelidad !== null ? `${Math.round(log.score_fidelidad * 100)}%` : '—'}

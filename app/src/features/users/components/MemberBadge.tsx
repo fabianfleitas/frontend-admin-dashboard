@@ -7,8 +7,8 @@ interface MemberBadgeProps {
 }
 
 const CONFIG: Record<MemberType, { label: string; cls: string }> = {
-  ADMIN: { label: 'Administrador', cls: 'bg-warning/10 text-warning' },
-  SECRETARIA: { label: 'Secretaría', cls: 'bg-success/10 text-success' },
+  ADMIN: { label: 'Administrador', cls: 'bg-warning-subtle text-warning' },
+  SECRETARIA: { label: 'Secretaría', cls: 'bg-success-subtle text-success' },
   ESTUDIANTE: { label: 'Estudiante', cls: 'bg-muted text-muted-foreground' },
 }
 

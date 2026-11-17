@@ -17,3 +17,16 @@ export function formatDate(value: string | Date | null | undefined): string {
     minute: '2-digit',
   }).format(date)
 }
+
+export function formatNumber(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—'
+  return new Intl.NumberFormat('es-PY').format(value)
+}
+
+export function formatMoney(value: number | null | undefined, moneda?: string | null): string {
+  if (value === null || value === undefined) return '—'
+  const code = (moneda ?? '').toUpperCase()
+  const symbol = code === 'PYG' ? 'Gs.' : code
+  const formatted = new Intl.NumberFormat('es-PY').format(value)
+  return symbol ? `${symbol} ${formatted}` : formatted
+}

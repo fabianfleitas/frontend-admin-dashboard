@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useSession } from '@/features/auth/hooks/useSession'
 import { useMe } from '@/features/auth/hooks/useMe'
 import { toast } from '@/stores/toast.store'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 export type RouteGuard = 'authenticated' | 'member' | 'staff' | 'admin' | 'platform'
 
@@ -32,7 +33,8 @@ export function ProtectedRoute({ children, guard = 'authenticated' }: ProtectedR
 
   if (!sessionLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-6">
+        <BrandLogo className="h-8" sloganClassName="text-[10px] leading-none" />
         <div className="text-sm text-muted-foreground" role="status">
           Verificando sesión…
         </div>
@@ -50,7 +52,8 @@ export function ProtectedRoute({ children, guard = 'authenticated' }: ProtectedR
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-6">
+        <BrandLogo className="h-8" sloganClassName="text-[10px] leading-none" />
         <div className="text-sm text-muted-foreground" role="status">
           Verificando permisos…
         </div>

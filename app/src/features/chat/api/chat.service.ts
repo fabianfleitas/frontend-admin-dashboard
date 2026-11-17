@@ -4,11 +4,18 @@ import type {
   ChatFeedbackOut,
   ChatQueryIn,
   ChatQueryOut,
+  ChatRegenerateOut,
   ChatVoiceOut,
 } from '../types'
 
 export function sendMessage(input: ChatQueryIn): Promise<ChatQueryOut> {
   return http.post<ChatQueryOut>('/api/chat/query', { body: input })
+}
+
+export function regenerateMessage(conversationId: number): Promise<ChatRegenerateOut> {
+  return http.post<ChatRegenerateOut>('/api/chat/regenerate', {
+    body: { conversation_id: conversationId },
+  })
 }
 
 export function sendFeedback(input: ChatFeedbackIn): Promise<ChatFeedbackOut> {

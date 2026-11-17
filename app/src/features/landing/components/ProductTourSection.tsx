@@ -1,5 +1,9 @@
+import { Upload, MessagesSquare, LayoutDashboard } from 'lucide-react'
+import { Reveal, RevealGroup, RevealItem } from './Reveal'
+
 interface Step {
   number: string
+  icon: typeof Upload
   title: string
   description: string
 }
@@ -7,48 +11,60 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: '01',
-    title: 'Conecta tu cuenta',
+    icon: Upload,
+    title: 'Cargás la documentación',
     description:
-      'Inicia sesión con Google y carga la documentación académica que será tu base de conocimiento.',
+      'Subís los PDFs con reglamentos, calendarios académicos y requisitos. El sistema los procesa, los indexa y los organiza por categorías.',
   },
   {
     number: '02',
-    title: 'Configura tu flujo',
+    icon: MessagesSquare,
+    title: 'El asistente responde con fuentes',
     description:
-      'Indexa documentos, ajusta modelos y prueba respuestas en el playground de IA antes de publicar.',
+      'El estudiante consulta por voz o texto y recibe una respuesta construida con esa documentación, junto con el detalle de los fragmentos que la respaldan.',
   },
   {
     number: '03',
-    title: 'Obtén resultados',
+    icon: LayoutDashboard,
+    title: 'El equipo supervisa y audita',
     description:
-      'El asistente responde a tus estudiantes y tú monitorizas métricas, conversaciones y auditoría.',
+      'Desde el panel institucional revisás las conversaciones, resolvés las derivaciones pendientes y seguís las métricas de uso y calidad.',
   },
 ]
 
 export function ProductTourSection() {
   return (
-    <section id="tour" className="border-b bg-background">
+    <section id="tour" className="border-b border-line-subtle bg-surface-canvas">
       <div className="mx-auto max-w-6xl px-6 py-20">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+        <Reveal className="max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-text-primary">
             Cómo funciona, en tres pasos
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Ve el producto en acción antes de registrarte. De la carga a la supervisión en minutos.
+          <p className="mt-3 text-text-secondary">
+            De la carga de documentos a la supervisión del equipo, sin salir del navegador.
           </p>
-        </div>
+        </Reveal>
 
-        <ol className="mt-12 grid gap-6 md:grid-cols-3">
+        <RevealGroup as="ol" className="mt-12 grid gap-6 md:grid-cols-3">
           {STEPS.map((step) => (
-            <li key={step.number} className="relative rounded-lg border bg-surface p-6">
-              <span className="text-sm font-semibold text-primary">{step.number}</span>
-              <h3 className="mt-2 text-base font-semibold text-foreground">{step.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
-              {/* Espacio para captura del paso */}
-              <div className="mt-5 aspect-video w-full rounded-md border bg-muted/40" />
-            </li>
+            <RevealItem
+              as="li"
+              key={step.number}
+              className="flex flex-col rounded-xl border border-line-subtle bg-surface-raised p-6"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-brand text-sm font-semibold tracking-wide text-brand-primary">
+                  {step.number}
+                </span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-subtle text-brand-primary">
+                  <step.icon size={18} aria-hidden />
+                </span>
+              </div>
+              <h3 className="mt-3 text-base font-semibold text-text-primary">{step.title}</h3>
+              <p className="mt-2 text-sm text-text-secondary">{step.description}</p>
+            </RevealItem>
           ))}
-        </ol>
+        </RevealGroup>
       </div>
     </section>
   )

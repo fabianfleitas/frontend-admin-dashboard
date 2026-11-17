@@ -121,7 +121,7 @@ export function AudioRecorder({ onRecorded, disabled = false }: AudioRecorderPro
   if (isRecording) {
     return (
       <div className="flex items-center gap-1">
-        <span className="flex items-center gap-1.5 rounded-full bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger">
+        <span className="flex items-center gap-1.5 rounded-full bg-danger-subtle px-2.5 py-1 text-xs font-medium text-danger">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" aria-hidden />
           Grabando {formatTime(elapsed)}
         </span>

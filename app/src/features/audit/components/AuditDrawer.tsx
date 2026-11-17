@@ -27,10 +27,16 @@ export function AuditDrawer({ log, onClose }: AuditDrawerProps) {
       open={open}
       onClose={onClose}
       title="Registro de auditoría"
-      description={log ? `Mensaje #${log.mensaje_id}` : undefined}
+      description={
+        log
+          ? log.mensaje_id !== null
+            ? `Mensaje #${log.mensaje_id}`
+            : 'Acción de gestión'
+          : undefined
+      }
       size="lg"
       footer={
-        log ? (
+        log && log.mensaje_id !== null ? (
           <Button variant="secondary" onClick={() => navigate('/conversations')}>
             <ExternalLink size={14} aria-hidden />
             Ver conversación relacionada
@@ -48,7 +54,9 @@ export function AuditDrawer({ log, onClose }: AuditDrawerProps) {
               <dt className="text-muted-foreground">ID</dt>
               <dd className="break-all font-mono text-xs text-foreground">{log.id}</dd>
               <dt className="text-muted-foreground">Mensaje ID</dt>
-              <dd className="font-mono text-foreground">#{log.mensaje_id}</dd>
+              <dd className="font-mono text-foreground">
+                {log.mensaje_id !== null ? `#${log.mensaje_id}` : '— (acción de gestión)'}
+              </dd>
               <dt className="text-muted-foreground">Fecha evaluación</dt>
               <dd className="font-medium text-foreground">
                 {formatDate(log.fecha_evaluacion)}
@@ -80,9 +88,21 @@ export function AuditDrawer({ log, onClose }: AuditDrawerProps) {
               Acceder al contexto completo
             </div>
             <p className="text-xs text-muted-foreground">
-              El endpoint <code>GET /api/admin/audit</code> retorna scores y observaciones pero no
-              incluye prompt, respuesta, usuario ni latencia. Para ver el contenido del mensaje
-              completo, abre el módulo Conversations y busca el mensaje #{log.mensaje_id}.
+              {log.mensaje_id !== null ? (
+                <>
+                  El endpoint <code>GET /api/admin/audit</code> retorna scores y observaciones pero
+                  no incluye prompt, respuesta, usuario ni latencia. Para ver el contenido del
+                  mensaje completo, abre el módulo Conversations y busca el mensaje #
+                  {log.mensaje_id}.
+                </>
+              ) : (
+                <>
+                  Este registro corresponde a una <strong>acción de gestión</strong> (por ejemplo,
+                  subir un documento, crear una categoría o administrar la plataforma) y no está
+                  vinculado a una conversación. El tipo de acción se indica en{' '}
+                  <code>observaciones</code>.
+                </>
+              )}
             </p>
           </section>
         </div>
